@@ -1,0 +1,14 @@
+{
+  "name": "clave-core",
+  "version": "0.0.1",
+  "description": "npm library containing everything you need to start working with zksync",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "aalimsahin",
+  "license": "ISC",
+  "dependencies": {
+    "ethers": "^5.7.0"
+  }
+}
