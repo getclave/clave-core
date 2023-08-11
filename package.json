@@ -10,5 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "ethers": "^5.7.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1"
   }
 }

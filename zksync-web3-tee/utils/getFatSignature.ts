@@ -2,9 +2,8 @@ import { Buffer } from 'buffer';
 import * as ethers from 'ethers';
 
 import { abiCoder, bufferToHex, derToRS, getCoordinates } from '.';
-import { HexString } from '../types';
 
-export const setFatSignature = async (
+export const getFatSignature = async (
     customSignatureAsHex: string,
     publicKey: string,
 ): Promise<string> => {
@@ -14,7 +13,7 @@ export const setFatSignature = async (
 
     const r = ethers.BigNumber.from(bufferToHex(rsBuffer[0]));
     const s = ethers.BigNumber.from(bufferToHex(rsBuffer[1]));
-    const coordinates = getCoordinates(publicKey as HexString);
+    const coordinates = getCoordinates(publicKey as `0x${string}`);
 
     const x = ethers.BigNumber.from('0x' + coordinates[0]);
     const y = ethers.BigNumber.from('0x' + coordinates[1]);
@@ -25,7 +24,7 @@ export const setFatSignature = async (
             [r, s],
             [x, y],
         ],
-    ) as HexString;
+    ) as `0x${string}`;
 
     return signature;
 };

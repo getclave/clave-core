@@ -1,25 +1,9 @@
-import { Deferrable, defineReadOnly } from '@ethersproject/properties';
+import { Deferrable } from '@ethersproject/properties';
 import { BigNumber, TypedDataDomain, TypedDataField, ethers } from 'ethers';
-import {
-    Contract,
-    EIP712Signer,
-    Provider,
-    Wallet,
-    types,
-    utils,
-} from 'zksync-web3';
+import { EIP712Signer, Provider, types, utils } from 'zksync-web3';
 
-import { ISigner } from './interfaces';
-
-type FeeType = {
-    gasPrice: BigNumber;
-    gasLimit: BigNumber;
-    feeToken: number;
-    feeType: number;
-    lastBaseFeePerGas: BigNumber;
-    maxFeePerGas: BigNumber;
-    maxPriorityFeePerGas: BigNumber;
-};
+import { FeeType, ISigner } from './interfaces/ISigner';
+import { getFatSignature } from './utils';
 
 export class Signer implements ISigner {
     readonly _isSigner: boolean;
@@ -33,8 +17,9 @@ export class Signer implements ISigner {
             androidTitle: string;
         },
     ) => Promise<string>;
-    public publicAddress: string;
 
+    public publicAddress: string;
+    public publicKey: string;
     constructor(
         alias: string,
         messageSignerFunction: (
@@ -46,16 +31,18 @@ export class Signer implements ISigner {
             },
         ) => Promise<string>,
         publicAddress: string,
+        publicKey: string,
         provider: Provider | undefined,
     ) {
+        // defineReadOnly(this, '_isSigner', true);
+        this._isSigner = true;
         this.alias = alias;
         this.messageSignerFunction = messageSignerFunction;
         if (ethers.utils.isAddress(publicAddress) === false)
             throw new Error('Invalid public address');
         this.publicAddress = publicAddress;
+        this.publicKey = publicKey;
         this.provider = provider;
-
-        defineReadOnly(this, '_isSigner', true);
     }
 
     connect(provider: Provider): Signer {
@@ -63,6 +50,7 @@ export class Signer implements ISigner {
             this.alias,
             this.messageSignerFunction,
             this.publicAddress,
+            this.publicKey,
             provider,
         );
     }
@@ -86,13 +74,14 @@ export class Signer implements ISigner {
         tx: types.TransactionRequest,
     ): Promise<types.TransactionRequest> {
         if (!this.provider) throw new Error('Provider is not set');
-        if (tx.from !== this.publicAddress) tx.from = await this.getAddress();
+        tx.from = await this.getAddress();
         if (tx.to && ethers.utils.isAddress(tx.to) === false)
             throw new Error('Invalid sent address');
         if (tx.nonce == null) tx.nonce = await this.getTransactionCount();
-        if (tx.value === null) tx.value = 0;
-        if (!tx.data) tx.data = '0x';
-        if (tx.gasLimit == null) tx.gasLimit = await this.estimateGas(tx);
+        if (!tx.value) tx.value = ethers.utils.parseEther('0');
+        if (tx.data == null) tx.data = '0x';
+        if (tx.gasLimit == null) tx.gasLimit = 100000000;
+        // if (tx.gasLimit == null) tx.gasLimit = await this.estimateGas(tx);
         if (tx.chainId == null)
             tx.chainId = (await this.provider.getNetwork()).chainId;
         if (tx.type == null) tx.type = 113;
@@ -121,27 +110,32 @@ export class Signer implements ISigner {
 
     async signTransaction(tx: types.TransactionRequest): Promise<string> {
         const signedTxHash = EIP712Signer.getSignedDigest(tx);
+
         const signedTx = await this.messageSignerFunction(
             this.alias,
             signedTxHash.toString().slice(2),
         );
-        return signedTx;
+        const signature = await getFatSignature(signedTx, this.publicKey);
+
+        return signature;
     }
 
     async signMessage(message: string | Uint8Array): Promise<string> {
         if (typeof message !== 'string') {
-            message = new TextDecoder().decode(message);
+            message = String.fromCharCode(...Array.from(message));
         }
         const signedMessage: string = await this.messageSignerFunction(
             this.alias,
             message,
         );
-        return signedMessage;
+        const signature = await getFatSignature(signedMessage, this.publicKey);
+        return signature;
     }
 
     async signTypedData(
         domain: TypedDataDomain,
-        types: Record<string, TypedDataField[]>,
+        types: Record<string, Array<TypedDataField>>,
+        // eslint-disable-next-line
         value: Record<string, any>,
     ): Promise<string> {
         return this.signTypedData(domain, types, value);
@@ -151,10 +145,19 @@ export class Signer implements ISigner {
         tx: types.TransactionRequest,
     ): Promise<types.TransactionResponse> {
         if (!this.provider) throw new Error('Provider is not set');
-        return this.provider.sendTransaction(utils.serialize(tx));
+        const transaction = await this.populateTransaction(tx);
+        const signedTransaction = await this.signTransaction(transaction);
+        const addedSignature = {
+            ...transaction,
+            customData: {
+                ...transaction.customData,
+                customSignature: signedTransaction,
+            },
+        };
+        return this.provider.sendTransaction(utils.serialize(addedSignature));
     }
-
-    static isSigner(value: any): value is Signer {
+    // eslint-disable-next-line
+    isSigner(value: any): value is any {
         return !!(value && value._isSigner);
     }
 

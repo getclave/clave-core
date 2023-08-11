@@ -1,39 +1,57 @@
-import { ethers } from 'ethers';
 import { providers } from 'ethers';
 import { Provider, types } from 'zksync-web3';
 
 import { HexString } from './HexString.types';
 
-interface IZkSyncContract {
+export interface ICore {
     _provider: Provider;
-    _contractAddress?: HexString;
-    _abi?: Array<JsonFragment>;
-    _abiCoder: ethers.utils.AbiCoder;
-
-    genZkSyncTransfer(
-        _from: HexString,
+    _publicAddress: HexString;
+    _username: string;
+    _publicKey: string;
+    _messageSignerFn: (
+        _username: string,
+        _transaction: string,
+    ) => Promise<string>;
+    populateTransaction(
+        _to: HexString,
+        _value?: string,
+        _data?: string,
+        _gasLimit?: number,
+        _customSignature?: string,
+    ): Promise<types.TransactionRequest>;
+    addSignatureToTransaction(
+        _transaction: types.TransactionRequest,
+        _customSignature: string,
+    ): types.TransactionRequest;
+    signTransaction(
+        _transaction: types.TransactionRequest,
+    ): Promise<string>;
+    transfer(
         _to: HexString,
         _value: string,
-        _username: string,
-        _publicKey: string,
-        messageSignerFn: (
-            _username: string,
-            _transaction: string,
-        ) => Promise<string>,
     ): Promise<types.TransactionResponse>;
+    // eslint-disable-next-line
+    Contract(contractAddress: HexString, abi: Array<JsonFragment>): any;
+}
 
-    genZkSyncTransaction<Params extends Array<unknown>>(
-        _from: HexString,
-        _value: string,
-        _username: string,
-        _publicKey: string,
-        _functionName: string,
-        _params: Params,
-        messageSignerFn: (
-            _username: string,
-            _transaction: string,
-        ) => Promise<string>,
+export interface IContract {
+    _contractAddress: HexString;
+    _contractABI: Array<JsonFragment>;
+    // eslint-disable-next-line
+    _claveBase: any;
+    _getExecutionCallData<Params extends Array<unknown>>(
+        functionName: string,
+        params: Params,
+    ): HexString;
+    write<Params extends Array<unknown>>(
+        functionName: string,
+        params: Params,
+        value: string,
     ): Promise<types.TransactionResponse>;
+    read<Params extends Array<unknown>>(
+        functionName: string,
+        params: Params,
+    ): Promise<unknown>;
 }
 
 export interface JsonFragmentType {

@@ -1,2 +1,2 @@
-export { ClaveCore } from './core';
-export { ClaveContract } from './contract';
+export { Core } from './core';
+export { Contract } from './contract';

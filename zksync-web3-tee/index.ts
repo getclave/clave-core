@@ -1,1 +1,2 @@
-export { ISigner } from './interfaces/index';
+export { Wallet } from './wallet';
+export { Signer } from './signer';

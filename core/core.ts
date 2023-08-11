@@ -2,11 +2,11 @@ import { ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
-import { ClaveContract } from '.';
-import { HexString, JsonFragment } from './types';
-import { setFatSignature } from './utils';
+import { Contract } from '.';
+import { HexString, ICore, JsonFragment } from './types';
+import { getFatSignature } from './utils';
 
-export class ClaveCore {
+export class Core implements ICore {
     _provider: Provider;
     _publicAddress: HexString;
     _username: string;
@@ -32,7 +32,7 @@ export class ClaveCore {
         this._messageSignerFn = messageSignerFn;
     }
 
-    public async genGetTransactionObject(
+    public async populateTransaction(
         _to: HexString,
         _value = '0',
         _data = '0x',
@@ -63,19 +63,19 @@ export class ClaveCore {
     }
 
     public addSignatureToTransaction(
-        transaction: types.TransactionRequest,
-        signature: string,
+        _transaction: types.TransactionRequest,
+        _signature: string,
     ): types.TransactionRequest {
         return {
-            ...transaction,
+            ..._transaction,
             customData: {
-                ...transaction.customData,
-                customSignature: signature,
+                ..._transaction.customData,
+                customSignature: _signature,
             },
         };
     }
 
-    public async genSignTransaction(
+    public async signTransaction(
         _transaction: types.TransactionRequest,
     ): Promise<string> {
         const signedTxHash = EIP712Signer.getSignedDigest(_transaction);
@@ -84,35 +84,28 @@ export class ClaveCore {
             this._username,
             signedTxHash.toString().slice(2),
         );
-        const fatSignature = await setFatSignature(signature, this._publicKey);
+        const fatSignature = await getFatSignature(signature, this._publicKey);
         return fatSignature;
-    }
-
-    public async genTransferTransaction(
-        _to: HexString,
-        _value: string,
-    ): Promise<types.TransactionResponse> {
-        let transaction: types.TransactionRequest =
-            await this.genGetTransactionObject(_to, _value);
-
-        const signature = await this.genSignTransaction(transaction);
-
-        transaction = this.addSignatureToTransaction(transaction, signature);
-
-        return this._provider.sendTransaction(utils.serialize(transaction));
     }
 
     public async transfer(
         _to: HexString,
         _value: string,
     ): Promise<types.TransactionResponse> {
-        return await this.genTransferTransaction(_to, _value);
+        let transaction: types.TransactionRequest =
+            await this.populateTransaction(_to, _value);
+
+        const signature = await this.signTransaction(transaction);
+
+        transaction = this.addSignatureToTransaction(transaction, signature);
+
+        return this._provider.sendTransaction(utils.serialize(transaction));
     }
 
     public Contract(
         contractAddress: HexString,
         abi: Array<JsonFragment>,
-    ): ClaveContract {
-        return new ClaveContract(contractAddress, abi, this);
+    ): Contract {
+        return new Contract(contractAddress, abi, this);
     }
 }

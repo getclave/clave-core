@@ -2,25 +2,25 @@ import { ethers } from 'ethers';
 import { utils } from 'zksync-web3';
 import type { types } from 'zksync-web3';
 
-import { ClaveCore } from '.';
-import { HexString, JsonFragment } from './types';
+import { Core } from '.';
+import { HexString, IContract, JsonFragment } from './types';
 
-export class ClaveContract {
-    private _contractAddress: HexString;
-    private _contractABI: Array<JsonFragment>;
-    private _claveBase: ClaveCore;
+export class Contract implements IContract {
+    _contractAddress: HexString;
+    _contractABI: Array<JsonFragment>;
+    _claveBase: Core;
 
     constructor(
         contractAddress: HexString,
         abi: Array<JsonFragment>,
-        claveBase: ClaveCore,
+        claveBase: Core,
     ) {
         this._contractAddress = contractAddress;
         this._contractABI = abi;
         this._claveBase = claveBase;
     }
 
-    private _getExecutionCallData<Params extends Array<unknown>>(
+     _getExecutionCallData<Params extends Array<unknown>>(
         functionName: string,
         params: Params,
     ): HexString {
@@ -37,13 +37,13 @@ export class ClaveContract {
     ): Promise<types.TransactionResponse> {
         const calldata = this._getExecutionCallData(functionName, params);
         let transaction: types.TransactionRequest =
-            await this._claveBase.genGetTransactionObject(
+            await this._claveBase.populateTransaction(
                 this._contractAddress,
                 value,
                 calldata,
             );
 
-        const signature = await this._claveBase.genSignTransaction(transaction);
+        const signature = await this._claveBase.signTransaction(transaction);
 
         transaction = this._claveBase.addSignatureToTransaction(
             transaction,

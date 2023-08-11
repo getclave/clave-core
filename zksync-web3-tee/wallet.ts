@@ -1,9 +1,9 @@
 import { BigNumber } from 'ethers';
 import { Provider, types } from 'zksync-web3';
 
-import { BaseWallet } from './interfaces/index';
+import { Signer } from './signer';
 
-export class Wallet extends BaseWallet {
+export class Wallet extends Signer {
     constructor(
         alias: string,
         messageSignerFunction: (
@@ -15,9 +15,10 @@ export class Wallet extends BaseWallet {
             },
         ) => Promise<string>,
         publicAddress: string,
+        publicKey: string,
         provider: Provider | undefined,
     ) {
-        super(alias, messageSignerFunction, publicAddress, provider);
+        super(alias, messageSignerFunction, publicAddress, publicKey, provider);
     }
     async getAddress(): Promise<string> {
         return super.getAddress();
@@ -36,6 +37,7 @@ export class Wallet extends BaseWallet {
     }
 
     async signTransaction(tx: types.TransactionRequest): Promise<string> {
+        if (tx.from == null) tx.from = await this.getAddress();
         return await super.signTransaction(tx);
     }
 
