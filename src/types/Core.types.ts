@@ -90,3 +90,5 @@ export interface L2ToL1Log {
     transactionHash: string;
     logIndex: number;
 }
+
+export const DEFAULT_GAS_LIMIT = 100000000;

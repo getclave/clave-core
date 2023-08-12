@@ -5,13 +5,17 @@ import type { Provider, types } from 'zksync-web3';
 
 import { Contract } from '.';
 import type { HexString, ICore, JsonFragment } from './types';
+import { DEFAULT_GAS_LIMIT } from './types';
 
 export class Core implements ICore {
     provider: Provider;
     private _publicAddress: HexString;
     private _username: string;
     private _publicKey: HexString;
-    private _messageSignerFn: (username: string, transaction: string) => Promise<string>;
+    private _messageSignerFn: (
+        username: string,
+        transaction: string,
+    ) => Promise<string>;
     constructor(
         provider: Provider,
         publicAddress: HexString,
@@ -33,7 +37,7 @@ export class Core implements ICore {
         to: HexString,
         value = '0',
         data = '0x',
-        gasLimit = 100000000,
+        gasLimit = DEFAULT_GAS_LIMIT,
         customSignature?: string,
     ): Promise<types.TransactionRequest> {
         const gasPrice = await this.provider.getGasPrice();
@@ -57,7 +61,7 @@ export class Core implements ICore {
             },
         };
 
-        if (gasLimit === 100000000) {
+        if (gasLimit === DEFAULT_GAS_LIMIT) {
             gasLimit = (
                 await this.provider.estimateGas(transaction)
             ).toNumber();

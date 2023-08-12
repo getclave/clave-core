@@ -1,17 +1,28 @@
 {
   "name": "clave-core",
-  "version": "0.0.1",
-  "description": "npm library containing everything you need to start working with zksync",
+  "version": "0.1.0",
+  "description": "library containing everything you need to start working with zksync",
+  "author": "aalimsahin <alim@clave.team> (https://github.com/getclave)",
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "aalimsahin",
-  "license": "ISC",
   "dependencies": {
     "ethers": "^5.7.0"
   },
   "devDependencies": {
     "ts-node": "^10.9.1"
-  }
+  },
+  "keywords": [
+    "ethers",
+    "zksync-web3",
+    "zksync-account-abstraction",
+    "clave",
+    "clave-core"
+  ],
+  "repository": "https://github.com/getclave/clave-core",
+  "bugs": {
+    "url": "https://github.com/getclave/clave-core/issues"
+  },
+  "license": "MIT"
 }
