@@ -1,31 +1,22 @@
-import { providers } from 'ethers';
-import { Provider, types } from 'zksync-web3';
+import type { providers } from 'ethers';
+import type { Provider, types } from 'zksync-web3';
 
-import { HexString } from './HexString.types';
+import type { HexString } from './HexString.types';
 
 export interface ICore {
-    _provider: Provider;
-    _publicAddress: HexString;
-    _username: string;
-    _publicKey: string;
-    _messageSignerFn: (
-        _username: string,
-        _transaction: string,
-    ) => Promise<string>;
+    provider: Provider;
     populateTransaction(
-        _to: HexString,
-        _value?: string,
-        _data?: string,
-        _gasLimit?: number,
-        _customSignature?: string,
+        to: HexString,
+        value?: string,
+        data?: string,
+        gasLimit?: number,
+        customSignature?: string,
     ): Promise<types.TransactionRequest>;
-    addSignatureToTransaction(
-        _transaction: types.TransactionRequest,
-        _customSignature: string,
+    attachSignature(
+        transaction: types.TransactionRequest,
+        customSignature: string,
     ): types.TransactionRequest;
-    signTransaction(
-        _transaction: types.TransactionRequest,
-    ): Promise<string>;
+    signTransaction(_transaction: types.TransactionRequest): Promise<string>;
     transfer(
         _to: HexString,
         _value: string,
@@ -35,14 +26,6 @@ export interface ICore {
 }
 
 export interface IContract {
-    _contractAddress: HexString;
-    _contractABI: Array<JsonFragment>;
-    // eslint-disable-next-line
-    _claveBase: any;
-    _getExecutionCallData<Params extends Array<unknown>>(
-        functionName: string,
-        params: Params,
-    ): HexString;
     write<Params extends Array<unknown>>(
         functionName: string,
         params: Params,
@@ -58,6 +41,7 @@ export interface JsonFragmentType {
     readonly name?: string;
     readonly indexed?: boolean;
     readonly type?: string;
+    // eslint-disable-next-line
     readonly internalType?: any;
     readonly components?: ReadonlyArray<JsonFragmentType>;
 }

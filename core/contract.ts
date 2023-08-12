@@ -2,13 +2,13 @@ import { ethers } from 'ethers';
 import { utils } from 'zksync-web3';
 import type { types } from 'zksync-web3';
 
-import { Core } from '.';
-import { HexString, IContract, JsonFragment } from './types';
+import type { Core } from '.';
+import type { HexString, IContract, JsonFragment } from './types';
 
 export class Contract implements IContract {
-    _contractAddress: HexString;
-    _contractABI: Array<JsonFragment>;
-    _claveBase: Core;
+    private _contractAddress: HexString;
+    private _contractABI: Array<JsonFragment>;
+    private _claveBase: Core;
 
     constructor(
         contractAddress: HexString,
@@ -20,7 +20,7 @@ export class Contract implements IContract {
         this._claveBase = claveBase;
     }
 
-     _getExecutionCallData<Params extends Array<unknown>>(
+    private _getExecutionCallData<Params extends Array<unknown>>(
         functionName: string,
         params: Params,
     ): HexString {
@@ -45,26 +45,24 @@ export class Contract implements IContract {
 
         const signature = await this._claveBase.signTransaction(transaction);
 
-        transaction = this._claveBase.addSignatureToTransaction(
-            transaction,
-            signature,
-        );
+        transaction = this._claveBase.attachSignature(transaction, signature);
 
-        return this._claveBase._provider.sendTransaction(
+        return this._claveBase.provider.sendTransaction(
             utils.serialize(transaction),
         );
     }
 
-    public async read<Params extends Array<unknown>>(
+    public async read<Params extends Array<unknown>, ReturnType = unknown>(
         functionName: string,
         params: Params,
-    ): Promise<unknown> {
+    ): Promise<ReturnType> {
         const contract = new ethers.Contract(
             this._contractAddress,
             this._contractABI,
-            this._claveBase._provider,
+            this._claveBase.provider,
         );
 
-        return await contract[functionName](...params);
+        const result = await contract[functionName](...params);
+        return result as ReturnType;
     }
 }

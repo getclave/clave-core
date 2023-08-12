@@ -1,20 +1,17 @@
+import { getFatSignature } from 'clave-utils';
 import { ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
 import { Contract } from '.';
-import { HexString, ICore, JsonFragment } from './types';
-import { getFatSignature } from './utils';
+import type { HexString, ICore, JsonFragment } from './types';
 
 export class Core implements ICore {
-    _provider: Provider;
-    _publicAddress: HexString;
-    _username: string;
-    _publicKey: HexString;
-    _messageSignerFn: (
-        _username: string,
-        _transaction: string,
-    ) => Promise<string>;
+    provider: Provider;
+    private _publicAddress: HexString;
+    private _username: string;
+    private _publicKey: HexString;
+    private _messageSignerFn: (username: string, transaction: string) => Promise<string>;
     constructor(
         provider: Provider,
         publicAddress: HexString,
@@ -25,7 +22,7 @@ export class Core implements ICore {
             _transaction: string,
         ) => Promise<string>,
     ) {
-        this._provider = provider;
+        this.provider = provider;
         this._publicAddress = publicAddress;
         this._username = username;
         this._publicKey = publicKey;
@@ -33,44 +30,51 @@ export class Core implements ICore {
     }
 
     public async populateTransaction(
-        _to: HexString,
-        _value = '0',
-        _data = '0x',
-        _gasLimit = 100000000,
-        _customSignature?: string,
+        to: HexString,
+        value = '0',
+        data = '0x',
+        gasLimit = 100000000,
+        customSignature?: string,
     ): Promise<types.TransactionRequest> {
-        const gasPrice = await this._provider.getGasPrice();
+        const gasPrice = await this.provider.getGasPrice();
+        const chainId = (await this.provider.getNetwork()).chainId;
+        const nonce = await this.provider.getTransactionCount(
+            this._publicAddress,
+        );
 
         const transaction: types.TransactionRequest = {
-            data: _data,
-            to: _to,
+            data,
+            to,
             from: this._publicAddress,
-            value: ethers.utils.parseEther(_value),
-            chainId: (await this._provider.getNetwork()).chainId,
-            gasLimit: _gasLimit,
-            nonce: await this._provider.getTransactionCount(
-                this._publicAddress,
-            ),
+            value: ethers.utils.parseEther(value),
+            chainId,
+            nonce,
             type: 113,
-            gasPrice: gasPrice,
+            gasPrice,
             customData: {
                 gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
-                customSignature: _customSignature,
-            } as types.Eip712Meta,
+                customSignature,
+            },
         };
 
-        return transaction;
+        if (gasLimit === 100000000) {
+            gasLimit = (
+                await this.provider.estimateGas(transaction)
+            ).toNumber();
+        }
+
+        return { ...transaction, gasLimit };
     }
 
-    public addSignatureToTransaction(
-        _transaction: types.TransactionRequest,
-        _signature: string,
+    public attachSignature(
+        transaction: types.TransactionRequest,
+        signature: string,
     ): types.TransactionRequest {
         return {
-            ..._transaction,
+            ...transaction,
             customData: {
-                ..._transaction.customData,
-                customSignature: _signature,
+                ...transaction.customData,
+                customSignature: signature,
             },
         };
     }
@@ -97,9 +101,9 @@ export class Core implements ICore {
 
         const signature = await this.signTransaction(transaction);
 
-        transaction = this.addSignatureToTransaction(transaction, signature);
+        transaction = this.attachSignature(transaction, signature);
 
-        return this._provider.sendTransaction(utils.serialize(transaction));
+        return this.provider.sendTransaction(utils.serialize(transaction));
     }
 
     public Contract(

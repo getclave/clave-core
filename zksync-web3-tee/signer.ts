@@ -1,9 +1,12 @@
-import { Deferrable } from '@ethersproject/properties';
-import { BigNumber, TypedDataDomain, TypedDataField, ethers } from 'ethers';
-import { EIP712Signer, Provider, types, utils } from 'zksync-web3';
+import type { Deferrable } from '@ethersproject/properties';
+import { getFatSignature } from 'clave-utils';
+import type { TypedDataDomain, TypedDataField } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
+import { EIP712Signer, utils } from 'zksync-web3';
+import type { Provider, types } from 'zksync-web3';
 
-import { FeeType, ISigner } from './interfaces/ISigner';
-import { getFatSignature } from './utils';
+import { allowedTransactionKeys } from './interfaces/ISigner';
+import type { ISigner } from './interfaces/ISigner';
 
 export class Signer implements ISigner {
     readonly _isSigner: boolean;
@@ -34,7 +37,6 @@ export class Signer implements ISigner {
         publicKey: string,
         provider: Provider | undefined,
     ) {
-        // defineReadOnly(this, '_isSigner', true);
         this._isSigner = true;
         this.alias = alias;
         this.messageSignerFunction = messageSignerFunction;
@@ -60,7 +62,7 @@ export class Signer implements ISigner {
     }
 
     async getTransactionCount(): Promise<number> {
-        if (!this.provider) throw new Error('Provider is not set');
+        this._checkProvider('getTransactionCount');
         return await this.provider.getTransactionCount(this.publicAddress);
     }
 
@@ -73,34 +75,37 @@ export class Signer implements ISigner {
     async populateTransaction(
         tx: types.TransactionRequest,
     ): Promise<types.TransactionRequest> {
-        if (!this.provider) throw new Error('Provider is not set');
+        this._checkProvider('populateTransaction');
+
+        const { provider } = this;
+
         tx.from = await this.getAddress();
-        if (tx.to && ethers.utils.isAddress(tx.to) === false)
+
+        if (tx.to && !ethers.utils.isAddress(tx.to))
             throw new Error('Invalid sent address');
-        if (tx.nonce == null) tx.nonce = await this.getTransactionCount();
-        if (!tx.value) tx.value = ethers.utils.parseEther('0');
-        if (tx.data == null) tx.data = '0x';
-        if (tx.gasLimit == null) tx.gasLimit = 100000000;
-        // if (tx.gasLimit == null) tx.gasLimit = await this.estimateGas(tx);
-        if (tx.chainId == null)
-            tx.chainId = (await this.provider.getNetwork()).chainId;
-        if (tx.type == null) tx.type = 113;
-        if (tx.gasPrice == null)
-            tx.gasPrice = await this.provider.getGasPrice();
-        if (tx.customData?.gasPerPubdata == null)
-            tx.customData = {
-                gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
-            };
+
+        tx.nonce ??= await this.getTransactionCount();
+        tx.value ??= ethers.utils.parseEther('0');
+        tx.data ??= '0x';
+        tx.gasLimit ??= await this.estimateGas(tx);
+        tx.chainId ??= (await provider.getNetwork()).chainId;
+        tx.type ??= 113;
+        tx.gasPrice ??= await provider.getGasPrice();
+
+        tx.customData ??= {
+            gasPerPubdata: utils.DEFAULT_GAS_PER_PUBDATA_LIMIT,
+        };
+
         return tx;
     }
 
     async estimateGas(tx: types.TransactionRequest): Promise<BigNumber> {
-        if (!this.provider) throw new Error('Provider is not set');
+        this._checkProvider('estimateGas');
         return await this.provider.estimateGas(tx);
     }
 
     async call(tx: types.TransactionRequest): Promise<string> {
-        if (!this.provider) throw new Error('Provider is not set');
+        this._checkProvider('call');
         return await this.provider.call(tx);
     }
 
@@ -144,7 +149,7 @@ export class Signer implements ISigner {
     async sendTransaction(
         tx: types.TransactionRequest,
     ): Promise<types.TransactionResponse> {
-        if (!this.provider) throw new Error('Provider is not set');
+        this._checkProvider('sendTransaction');
         const transaction = await this.populateTransaction(tx);
         const signedTransaction = await this.signTransaction(transaction);
         const addedSignature = {
@@ -157,41 +162,47 @@ export class Signer implements ISigner {
         return this.provider.sendTransaction(utils.serialize(addedSignature));
     }
     // eslint-disable-next-line
-    isSigner(value: any): value is any {
+    isSigner(value: any): value is Signer {
         return !!(value && value._isSigner);
     }
 
     async getBalance(): Promise<BigNumber> {
-        if (!this.provider) throw new Error('Provider is not set');
+        this._checkProvider('getBalance');
         return await this.provider.getBalance(this.publicAddress);
     }
 
     async getChainId(): Promise<number> {
-        if (!this.provider) throw new Error('Provider is not set');
+        this._checkProvider('getChainId');
         return (await this.provider.getNetwork()).chainId;
     }
     async getGasPrice(): Promise<BigNumber> {
         return BigNumber.from(0);
     }
 
-    async getFeeData(): Promise<FeeType> {
-        return {
-            gasPrice: await this.getGasPrice(),
-            gasLimit: BigNumber.from(0),
-            feeToken: 0,
-            feeType: 0,
-            lastBaseFeePerGas: BigNumber.from(0),
-            maxFeePerGas: BigNumber.from(0),
-            maxPriorityFeePerGas: BigNumber.from(0),
-        };
+    checkTransaction(
+        transaction: Deferrable<types.TransactionRequest>,
+    ): Deferrable<types.TransactionRequest> {
+        for (const key in transaction) {
+            if (allowedTransactionKeys.indexOf(key) === -1) {
+                throw new Error('invalid transaction key: '.concat(key));
+            }
+        }
+
+        if (transaction.from == null) {
+            transaction.from = this.getAddress();
+        } else {
+            // Make sure any provided address matches this signer
+            if (transaction.from !== this.getAddress()) {
+                throw new Error('from address mismatch');
+            }
+        }
+
+        return transaction;
     }
 
-    checkTransaction(): Deferrable<types.TransactionRequest> {
-        return {};
-    }
-
-    _checkProvider(): boolean {
-        if (this.provider) return true;
-        return false;
+    _checkProvider(operation?: string): asserts this is { provider: Provider } {
+        if (!this.provider) {
+            throw new Error(`Provider is not set when calling ${operation}`);
+        }
     }
 }

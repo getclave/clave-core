@@ -1,20 +1,11 @@
-import {
+import type {
     TypedDataDomain,
     TypedDataField,
 } from '@ethersproject/abstract-signer';
-import { Deferrable } from '@ethersproject/properties';
-import { BigNumber } from 'ethers';
-import { Provider, types } from 'zksync-web3';
+import type { Deferrable } from '@ethersproject/properties';
+import type { BigNumber } from 'ethers';
+import type { Provider, types } from 'zksync-web3';
 
-export type FeeType = {
-    gasPrice: BigNumber;
-    gasLimit: BigNumber;
-    feeToken: number;
-    feeType: number;
-    lastBaseFeePerGas: BigNumber;
-    maxFeePerGas: BigNumber;
-    maxPriorityFeePerGas: BigNumber;
-};
 export interface ISigner {
     _isSigner: boolean;
     provider: Provider | undefined;
@@ -29,7 +20,7 @@ export interface ISigner {
     ) => Promise<string>;
     publicAddress: string;
     publicKey: string;
-
+    // eslint-disable-next-line
     connect(provider: Provider): any;
     getAddress(): Promise<string>;
     getTransactionCount(): Promise<number>;
@@ -58,7 +49,25 @@ export interface ISigner {
     getBalance(): Promise<BigNumber>;
     getChainId(): Promise<number>;
     getGasPrice(): Promise<BigNumber>;
-    getFeeData(): Promise<FeeType>;
-    checkTransaction(): Deferrable<types.TransactionRequest>;
-    _checkProvider(): boolean;
+    checkTransaction(
+        transaction: Deferrable<types.TransactionRequest>,
+    ): Deferrable<types.TransactionRequest>;
+    _checkProvider(operation?: string): void;
 }
+
+export const allowedTransactionKeys: Array<string> = [
+    'accessList',
+    'ccipReadEnabled',
+    'chainId',
+    'customData',
+    'data',
+    'from',
+    'gasLimit',
+    'gasPrice',
+    'maxFeePerGas',
+    'maxPriorityFeePerGas',
+    'nonce',
+    'to',
+    'type',
+    'value',
+];

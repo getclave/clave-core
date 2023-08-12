@@ -1,5 +1,5 @@
-import { BigNumber } from 'ethers';
-import { Provider, types } from 'zksync-web3';
+import type { BigNumber } from 'ethers';
+import type { Provider, types } from 'zksync-web3';
 
 import { Signer } from './signer';
 
