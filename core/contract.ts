@@ -33,7 +33,7 @@ export class Contract implements IContract {
     public async write<Params extends Array<unknown>>(
         functionName: string,
         params: Params,
-        value: string,
+        value = '0',
     ): Promise<types.TransactionResponse> {
         const calldata = this._getExecutionCallData(functionName, params);
         let transaction: types.TransactionRequest =
@@ -52,9 +52,9 @@ export class Contract implements IContract {
         );
     }
 
-    public async read<Params extends Array<unknown>, ReturnType = unknown>(
+    public async read<Params extends Array<unknown> = [], ReturnType = unknown>(
         functionName: string,
-        params: Params,
+        ...params: Params
     ): Promise<ReturnType> {
         const contract = new ethers.Contract(
             this._contractAddress,
