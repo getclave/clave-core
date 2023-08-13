@@ -1,3 +1,8 @@
+/**
+ * Copyright Clave - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
 import type { providers } from 'ethers';
 import type { Provider, types } from 'zksync-web3';
 

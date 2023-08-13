@@ -1,3 +1,8 @@
+/**
+ * Copyright Clave - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ */
 import { ethers } from 'ethers';
 import { utils } from 'zksync-web3';
 import type { types } from 'zksync-web3';
