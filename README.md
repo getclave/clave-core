@@ -18,7 +18,7 @@ import { Provider } from 'zksync-web3';
 async function main() {
     const provider = new Provider('https://testnet.era.zksync.dev');
     const username = 'my-key-pair';
-    const publicKey = await createKeyPair(ALIAS);
+    const publicKey = await createKeyPair(username);
     const publicAddress = '0x123...321';
 
     // Initialize Core

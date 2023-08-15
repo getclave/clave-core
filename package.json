@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "ethers": "^5.7.0"
+    "ethers": "^5.7.0",
+    "zksync-web3": "^0.14.3"
   },
   "devDependencies": {
     "ts-node": "^10.9.1"
