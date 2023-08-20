@@ -5,7 +5,8 @@
   "author": "aalimsahin <alim@clave.team> (https://github.com/getclave)",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint-check": "eslint \"./**/*.ts\""
   },
   "dependencies": {
     "ethers": "^5.7.0",
