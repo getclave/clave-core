@@ -5,3 +5,4 @@
  */
 export { Core } from './core';
 export { Contract } from './contract';
+export { ClaveToken } from './iface/IClaveToken';
