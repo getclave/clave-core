@@ -2,7 +2,7 @@
   "name": "clave-core",
   "version": "0.1.0",
   "description": "library containing everything you need to start working with zksync",
-  "author": "aalimsahin <alim@clave.team> (https://github.com/getclave)",
+  "author": "getclave.io",
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
