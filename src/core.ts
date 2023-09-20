@@ -3,29 +3,30 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
+import { CONSTANT_ADDRESSES, MULTICALL3_ABI } from 'clave-constants';
 import { getFatSignature } from 'clave-utils';
 import { ethers } from 'ethers';
-import { EIP712Signer, utils } from 'zksync-web3';
+import { EIP712Signer, Contract as ZkSyncContract, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
 import { Contract } from '.';
-import type { HexString, ICore, JsonFragment } from './types';
+import type { ICore, JsonFragment } from './types';
 import { DEFAULT_GAS_LIMIT } from './types';
 
 export class Core implements ICore {
     provider: Provider;
-    private _publicAddress: HexString;
+    private _publicAddress: string;
     private _username: string;
-    private _publicKey: HexString;
+    private _publicKey: string;
     private _messageSignerFn: (
         username: string,
         transaction: string,
     ) => Promise<string>;
     constructor(
         provider: Provider,
-        publicAddress: HexString,
+        publicAddress: string,
         username: string,
-        publicKey: HexString,
+        publicKey: string,
         messageSignerFn: (
             _username: string,
             _transaction: string,
@@ -39,7 +40,7 @@ export class Core implements ICore {
     }
 
     public async populateTransaction(
-        to: HexString,
+        to: string,
         value = '0',
         data = '0x',
         gasLimit = DEFAULT_GAS_LIMIT,
@@ -102,7 +103,7 @@ export class Core implements ICore {
     }
 
     public async transfer(
-        _to: HexString,
+        _to: string,
         _value: string,
     ): Promise<types.TransactionResponse> {
         let transaction: types.TransactionRequest =
@@ -116,9 +117,21 @@ export class Core implements ICore {
     }
 
     public Contract(
-        contractAddress: HexString,
+        contractAddress: string,
         abi: Array<JsonFragment>,
     ): Contract {
         return new Contract(contractAddress, abi, this);
+    }
+
+    public getBalancesWithMultiCall3(): ZkSyncContract {
+        const multicall3Contract = this.Contract(
+            CONSTANT_ADDRESSES.MULTICALL3,
+            MULTICALL3_ABI,
+        );
+        return new ZkSyncContract(
+            CONSTANT_ADDRESSES.MULTICALL3,
+            MULTICALL3_ABI,
+            this.provider,
+        );
     }
 }

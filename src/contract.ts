@@ -8,16 +8,16 @@ import { utils } from 'zksync-web3';
 import type { types } from 'zksync-web3';
 
 import type { Core } from '.';
-import type { HexString, IContract, JsonFragment } from './types';
+import type { IContract, JsonFragment } from './types';
 
 export class Contract implements IContract {
-    private _contractAddress: HexString;
-    private _contractABI: Array<JsonFragment>;
+    private _contractAddress: string;
+    private _contractABI: Array<JsonFragment | string>;
     private _claveBase: Core;
 
     constructor(
-        contractAddress: HexString,
-        abi: Array<JsonFragment>,
+        contractAddress: string,
+        abi: Array<JsonFragment | string>,
         claveBase: Core,
     ) {
         this._contractAddress = contractAddress;
@@ -28,11 +28,11 @@ export class Contract implements IContract {
     private _getExecutionCallData<Params extends Array<unknown>>(
         functionName: string,
         params: Params,
-    ): HexString {
+    ): string {
         const iface = new ethers.utils.Interface(this._contractABI);
         const calldata = iface.encodeFunctionData(functionName, params);
 
-        return calldata as HexString;
+        return calldata;
     }
 
     public async write<Params extends Array<unknown>>(

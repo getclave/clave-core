@@ -6,12 +6,10 @@
 import type { providers } from 'ethers';
 import type { Provider, types } from 'zksync-web3';
 
-import type { HexString } from './HexString.types';
-
 export interface ICore {
     provider: Provider;
     populateTransaction(
-        to: HexString,
+        to: string,
         value?: string,
         data?: string,
         gasLimit?: number,
@@ -22,12 +20,9 @@ export interface ICore {
         customSignature: string,
     ): types.TransactionRequest;
     signTransaction(_transaction: types.TransactionRequest): Promise<string>;
-    transfer(
-        _to: HexString,
-        _value: string,
-    ): Promise<types.TransactionResponse>;
+    transfer(_to: string, _value: string): Promise<types.TransactionResponse>;
     // eslint-disable-next-line
-    Contract(contractAddress: HexString, abi: Array<JsonFragment>): any;
+    Contract(contractAddress: string, abi: Array<JsonFragment>): any;
 }
 
 export interface IContract {
@@ -97,3 +92,5 @@ export interface L2ToL1Log {
 }
 
 export const DEFAULT_GAS_LIMIT = 100000000;
+
+export type Aggregate3Response = { success: boolean; returnData: string };
