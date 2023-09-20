@@ -134,11 +134,11 @@ export class Core implements ICore {
         const erc20TokenInterface = new ethers.utils.Interface(ERC20ABI);
 
         const calls = tokenAddresses.map((addr) => [
-            /* target */ addr,
-            /* allowFailure */ true,
-            /* calldata */ erc20TokenInterface.encodeFunctionData('balanceOf', [
+            addr, // target
+            true, // allowFailure
+            erc20TokenInterface.encodeFunctionData('balanceOf', [
                 this._publicAddress,
-            ]),
+            ]), //calldata
         ]);
 
         const results: Array<Aggregate3Response> =
