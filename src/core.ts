@@ -3,14 +3,14 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import { CONSTANT_ADDRESSES, MULTICALL3_ABI } from 'clave-constants';
+import { CONSTANT_ADDRESSES, ERC20ABI, MULTICALL3_ABI } from 'clave-constants';
 import { getFatSignature } from 'clave-utils';
 import { ethers } from 'ethers';
-import { EIP712Signer, Contract as ZkSyncContract, utils } from 'zksync-web3';
+import { EIP712Signer, Contract as ZksyncContract, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
 import { Contract } from '.';
-import type { ICore, JsonFragment } from './types';
+import type { Aggregate3Response, ICore, JsonFragment } from './types';
 import { DEFAULT_GAS_LIMIT } from './types';
 
 export class Core implements ICore {
@@ -118,20 +118,39 @@ export class Core implements ICore {
 
     public Contract(
         contractAddress: string,
-        abi: Array<JsonFragment>,
+        abi: Array<JsonFragment | string>,
     ): Contract {
         return new Contract(contractAddress, abi, this);
     }
 
-    public getBalancesWithMultiCall3(): ZkSyncContract {
-        const multicall3Contract = this.Contract(
-            CONSTANT_ADDRESSES.MULTICALL3,
-            MULTICALL3_ABI,
-        );
-        return new ZkSyncContract(
+    public async getBalancesWithMultiCall3(
+        accountAddress: string,
+        tokenAddresses: Array<string>,
+    ): Promise<Array<string>> {
+        const multicall3Contract = new ZksyncContract(
             CONSTANT_ADDRESSES.MULTICALL3,
             MULTICALL3_ABI,
             this.provider,
         );
+        const erc20TokenInterface = new ethers.utils.Interface(ERC20ABI);
+
+        const calls = tokenAddresses.map((addr) => [
+            /* target */ addr,
+            /* allowFailure */ true,
+            /* calldata */ erc20TokenInterface.encodeFunctionData('balanceOf', [
+                accountAddress,
+            ]),
+        ]);
+
+        const results: Array<Aggregate3Response> =
+            await multicall3Contract.callStatic.aggregate3(calls);
+
+        const tokenBalances: Array<string> = results.map((result) =>
+            erc20TokenInterface
+                .decodeFunctionResult('balanceOf', result.returnData)[0]
+                .toString(),
+        );
+
+        return tokenBalances;
     }
 }
