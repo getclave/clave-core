@@ -124,7 +124,6 @@ export class Core implements ICore {
     }
 
     public async getBalancesWithMultiCall3(
-        accountAddress: string,
         tokenAddresses: Array<string>,
     ): Promise<Array<string>> {
         const multicall3Contract = new ZksyncContract(
@@ -138,7 +137,7 @@ export class Core implements ICore {
             /* target */ addr,
             /* allowFailure */ true,
             /* calldata */ erc20TokenInterface.encodeFunctionData('balanceOf', [
-                accountAddress,
+                this._publicAddress,
             ]),
         ]);
 

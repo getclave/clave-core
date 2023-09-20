@@ -22,7 +22,10 @@ export interface ICore {
     signTransaction(_transaction: types.TransactionRequest): Promise<string>;
     transfer(_to: string, _value: string): Promise<types.TransactionResponse>;
     // eslint-disable-next-line
-    Contract(contractAddress: string, abi: Array<JsonFragment>): any;
+    Contract(contractAddress: string, abi: Array<JsonFragment | string>): any;
+    getBalancesWithMultiCall3(
+        tokenAddresses: Array<string>,
+    ): Promise<Array<string>>;
 }
 
 export interface IContract {

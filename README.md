@@ -7,6 +7,7 @@ Library containing everything you need to start working with zksync
 -   Infrastructure for writing to contract, reading from contract and transfer function
 -   Customizable TEE (Trusted Execution Environment) signing method
 -   Disables the alias, signing function, public key, and public address once initialized.
+-   Get token balances using multicall3
 
 ## API
 
@@ -46,5 +47,12 @@ async function main() {
     const increase = async (): Promise<ethers.Transaction> => {
         const tx = await contract.write('increase', [7]);
     };
+
+    // Get token balances using multicall3
+    const tokens = [
+        '0x3e7676937A7E96CFB7616f255b9AD9FF47363D4b',
+        '0x40609141Db628BeEE3BfAB8034Fc2D8278D0Cc78',
+    ];
+    const balances = await core.getBalancesWithMultiCall3(tokens);
 }
 ```
