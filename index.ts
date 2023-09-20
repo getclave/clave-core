@@ -3,4 +3,4 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-export { Core, Contract, ClaveToken } from './src';
+export * from './src';
