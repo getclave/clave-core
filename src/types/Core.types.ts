@@ -3,7 +3,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import type { providers } from 'ethers';
+import type { BigNumber, providers } from 'ethers';
 import type { Provider, types } from 'zksync-web3';
 
 export interface ICore {
@@ -25,7 +25,7 @@ export interface ICore {
     Contract(contractAddress: string, abi: Array<JsonFragment | string>): any;
     getBalancesWithMultiCall3(
         tokenAddresses: Array<string>,
-    ): Promise<Array<string>>;
+    ): Promise<Array<BigNumber>>;
 }
 
 export interface IContract {

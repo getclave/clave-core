@@ -5,7 +5,7 @@
  */
 import { CONSTANT_ADDRESSES, ERC20ABI, MULTICALL3_ABI } from 'clave-constants';
 import { getFatSignature } from 'clave-utils';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import { EIP712Signer, Contract as ZksyncContract, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
@@ -125,7 +125,7 @@ export class Core implements ICore {
 
     public async getBalancesWithMultiCall3(
         tokenAddresses: Array<string>,
-    ): Promise<Array<string>> {
+    ): Promise<Array<BigNumber>> {
         const multicall3Contract = new ZksyncContract(
             CONSTANT_ADDRESSES.MULTICALL3,
             MULTICALL3_ABI,
@@ -143,18 +143,9 @@ export class Core implements ICore {
         const results: Array<Aggregate3Response> =
             await multicall3Contract.callStatic.aggregate3(calls);
 
-        const tokenBalances: Array<string> = results.map((result, i) => {
-            console.log(
-                'calls: ',
-                results,
-                // erc20TokenInterface.decodeFunctionResult(
-                //     'balanceOf',
-                //     result.returnData,
-                // ),
-            );
-            return erc20TokenInterface
-                .decodeFunctionResult('balanceOf', result.returnData)[0]
-                .toString();
+        const tokenBalances: Array<BigNumber> = results.map((result) => {
+            if (result.success === false) return BigNumber.from(0);
+            return BigNumber.from(result.returnData);
         });
 
         return tokenBalances;
