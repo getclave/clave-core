@@ -140,15 +140,22 @@ export class Core implements ICore {
                 this._publicAddress,
             ]), //calldata
         ]);
-
         const results: Array<Aggregate3Response> =
             await multicall3Contract.callStatic.aggregate3(calls);
 
-        const tokenBalances: Array<string> = results.map((result) =>
-            erc20TokenInterface
+        const tokenBalances: Array<string> = results.map((result, i) => {
+            console.log(
+                'calls: ',
+                results,
+                // erc20TokenInterface.decodeFunctionResult(
+                //     'balanceOf',
+                //     result.returnData,
+                // ),
+            );
+            return erc20TokenInterface
                 .decodeFunctionResult('balanceOf', result.returnData)[0]
-                .toString(),
-        );
+                .toString();
+        });
 
         return tokenBalances;
     }
