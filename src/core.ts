@@ -126,6 +126,7 @@ export class Core implements ICore {
     public async getBalancesWithMultiCall3(
         tokenAddresses: Array<string>,
     ): Promise<Array<BigNumber>> {
+        const ETH_ADDRESS = '0x000000000000000000000000000000000000800A';
         const multicall3Contract = new ZksyncContract(
             CONSTANT_ADDRESSES.MULTICALL3,
             MULTICALL3_ABI,
@@ -133,13 +134,20 @@ export class Core implements ICore {
         );
         const erc20TokenInterface = new ethers.utils.Interface(ERC20ABI);
 
-        const calls = tokenAddresses.map((addr) => [
-            addr, // target
-            true, // allowFailure
-            erc20TokenInterface.encodeFunctionData('balanceOf', [
+        const calls = tokenAddresses.map((addr) => {
+            let calldata = erc20TokenInterface.encodeFunctionData('balanceOf', [
                 this._publicAddress,
-            ]), //calldata
-        ]);
+            ]);
+            if (addr === ETH_ADDRESS) {
+                // selector of balanceOf(uint256) instead of balanceOf(address)
+                calldata = '0x9cc7f708'.concat(calldata.slice(10));
+            }
+            return [
+                addr, // target
+                true, // allowFailure
+                calldata, //calldata
+            ];
+        });
         const results: Array<Aggregate3Response> =
             await multicall3Contract.callStatic.aggregate3(calls);
 
