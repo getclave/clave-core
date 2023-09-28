@@ -8,6 +8,7 @@ import { utils } from 'zksync-web3';
 import type { types } from 'zksync-web3';
 
 import type { Core } from '.';
+import { CONSTANT_ADDRESSES } from '../../clave-constants/address/index';
 import type { IContract, JsonFragment } from './types';
 
 export class Contract implements IContract {
@@ -39,6 +40,8 @@ export class Contract implements IContract {
         functionName: string,
         params: Params,
         value = '0',
+        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
+        hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
         const calldata = this._getExecutionCallData(functionName, params);
         let transaction: types.TransactionRequest =
@@ -50,7 +53,12 @@ export class Contract implements IContract {
 
         const signature = await this._claveBase.signTransaction(transaction);
 
-        transaction = this._claveBase.attachSignature(transaction, signature);
+        transaction = this._claveBase.attachSignature(
+            transaction,
+            signature,
+            validatorAddress,
+            hookData,
+        );
 
         return this._claveBase.provider.sendTransaction(
             utils.serialize(transaction),
