@@ -4,7 +4,7 @@
  * Proprietary and confidential
  */
 import { CONSTANT_ADDRESSES, ERC20ABI, MULTICALL3_ABI } from 'clave-constants';
-import { getFatSignature } from 'clave-utils';
+import { abiCoder, getFatSignature } from 'clave-utils';
 import { BigNumber, ethers } from 'ethers';
 import { EIP712Signer, Contract as ZksyncContract, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
@@ -79,12 +79,18 @@ export class Core implements ICore {
     public attachSignature(
         transaction: types.TransactionRequest,
         signature: string,
+        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
+        hookData: Array<ethers.utils.BytesLike> = [],
     ): types.TransactionRequest {
+        const formatSignature = abiCoder.encode(
+            ['bytes', 'address', 'bytes[]'],
+            [signature, validatorAddress, hookData],
+        );
         return {
             ...transaction,
             customData: {
                 ...transaction.customData,
-                customSignature: signature,
+                customSignature: formatSignature,
             },
         };
     }
@@ -103,15 +109,22 @@ export class Core implements ICore {
     }
 
     public async transfer(
-        _to: string,
-        _value: string,
+        to: string,
+        value: string,
+        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
+        hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
         let transaction: types.TransactionRequest =
-            await this.populateTransaction(_to, _value);
+            await this.populateTransaction(to, value);
 
         const signature = await this.signTransaction(transaction);
 
-        transaction = this.attachSignature(transaction, signature);
+        transaction = this.attachSignature(
+            transaction,
+            signature,
+            validatorAddress,
+            hookData,
+        );
 
         return this.provider.sendTransaction(utils.serialize(transaction));
     }
