@@ -44,24 +44,13 @@ export class Contract implements IContract {
         hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
         const calldata = this._getExecutionCallData(functionName, params);
-        let transaction: types.TransactionRequest =
-            await this._claveBase.populateTransaction(
-                this._contractAddress,
-                value,
-                calldata,
-            );
 
-        const signature = await this._claveBase.signTransaction(transaction);
-
-        transaction = this._claveBase.attachSignature(
-            transaction,
-            signature,
+        return this._claveBase.sendTransaction(
+            this._contractAddress,
+            value,
+            calldata,
             validatorAddress,
             hookData,
-        );
-
-        return this._claveBase.provider.sendTransaction(
-            utils.serialize(transaction),
         );
     }
 
