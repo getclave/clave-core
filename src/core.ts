@@ -10,10 +10,10 @@ import type { Provider, types } from 'zksync-web3';
 
 import { Contract } from '.';
 import { PopulatedTransaction } from './populatedTransaction';
-import type { Aggregate3Response, JsonFragment } from './types';
+import type { Aggregate3Response, ICore, JsonFragment } from './types';
 import { DEFAULT_GAS_LIMIT } from './types';
 
-export class Core {
+export class Core implements ICore {
     provider: Provider;
     private _publicAddress: string;
     private _username: string;

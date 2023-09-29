@@ -14,27 +14,24 @@ export interface ICore {
         data?: string,
         gasLimit?: number,
         customSignature?: string,
-    ): Promise<types.TransactionRequest>;
-    attachSignature(
-        transaction: types.TransactionRequest,
-        customSignature: string,
-    ): types.TransactionRequest;
-    signTransaction(_transaction: types.TransactionRequest): Promise<string>;
-    sendPopulatedTransaction(
-        transaction: types.TransactionRequest,
-        validatorAddress: string,
-        hookData: Array<utils.BytesLike>,
-    ): Promise<types.TransactionResponse>;
+    ): Promise<IPopulatedTransaction>;
     sendTransaction(
         to: string,
         value: string,
         data?: string,
         validatorAddress?: string,
-        hookData?: Array<utils.BytesLike>,
-    ): Promise<types.TransactionResponse>;
-    transfer(_to: string, _value: string): Promise<types.TransactionResponse>;
-    // eslint-disable-next-line
-    Contract(contractAddress: string, abi: Array<JsonFragment | string>): any;
+        hookData?: Array<Buffer>,
+    ): Promise<TransactionResponse>;
+    transfer(
+        to: string,
+        value: string,
+        validatorAddress?: string,
+        hookData?: Array<Buffer>,
+    ): Promise<TransactionResponse>;
+    Contract(
+        contractAddress: string,
+        abi: Array<JsonFragment | string>,
+    ): IContract;
     getBalancesWithMultiCall3(
         tokenAddresses: Array<string>,
     ): Promise<Array<BigNumber>>;
@@ -109,3 +106,20 @@ export interface L2ToL1Log {
 export const DEFAULT_GAS_LIMIT = 100000000;
 
 export type Aggregate3Response = { success: boolean; returnData: string };
+
+export interface IPopulatedTransaction {
+    transaction: types.TransactionRequest;
+    attachSignature(
+        transaction: types.TransactionRequest,
+        signature: string,
+        validatorAddress?: string,
+        hookData?: Array<utils.BytesLike>,
+    ): types.TransactionRequest;
+
+    signTransaction(transaction: types.TransactionRequest): Promise<string>;
+
+    send(
+        validatorAddress?: string,
+        hookData?: Array<utils.BytesLike>,
+    ): Promise<types.TransactionResponse>;
+}

@@ -4,4 +4,3 @@
  * Proprietary and confidential
  */
 export * from './Core.types';
-export * from './populatedTransaction.types';
