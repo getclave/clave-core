@@ -20,13 +20,13 @@ export interface ICore {
         value: string,
         data?: string,
         validatorAddress?: string,
-        hookData?: Array<Buffer>,
+        hookData?: Array<utils.BytesLike>,
     ): Promise<TransactionResponse>;
     transfer(
         to: string,
         value: string,
         validatorAddress?: string,
-        hookData?: Array<Buffer>,
+        hookData?: Array<utils.BytesLike>,
     ): Promise<TransactionResponse>;
     Contract(
         contractAddress: string,
