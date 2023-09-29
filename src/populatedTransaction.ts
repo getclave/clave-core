@@ -12,7 +12,7 @@ import type { Provider, types } from 'zksync-web3';
 import type { IPopulatedTransaction } from './types';
 
 export class PopulatedTransaction implements IPopulatedTransaction {
-    private transaction: types.TransactionRequest;
+    transaction: types.TransactionRequest;
     private provider: Provider;
     private username: string;
     private publicKey: string;
