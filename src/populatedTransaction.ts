@@ -9,7 +9,9 @@ import { type ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
-export class PopulatedTransaction {
+import type { IPopulatedTransaction } from './types';
+
+export class PopulatedTransaction implements IPopulatedTransaction {
     private transaction: types.TransactionRequest;
     private provider: Provider;
     private username: string;
