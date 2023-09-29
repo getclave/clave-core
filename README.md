@@ -38,6 +38,19 @@ async function main() {
         const tx = await core.transfer(receiverAddress, transferAmount);
     };
 
+    // Send transaction
+    const SendTransactionFunction = async (): Promise<ethers.Transaction> => {
+        const receiverAddress = '0x114B242D931B47D5cDcEe7AF065856f70ee278C4';
+        const transferAmount = '0';
+        const calldata = '0x23423423';
+
+        const tx = await core.transfer(
+            receiverAddress,
+            transferAmount,
+            calldata,
+        );
+    };
+
     // Read contract
     const getCount = async (): Promise<void> => {
         const count = await contract.read('count', []);
