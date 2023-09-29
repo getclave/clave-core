@@ -10,6 +10,7 @@ import { EIP712Signer, Contract as ZksyncContract, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
 import { Contract } from '.';
+import { PopulatedTransaction } from './populatedTransaction';
 import type { Aggregate3Response, ICore, JsonFragment } from './types';
 import { DEFAULT_GAS_LIMIT } from './types';
 
@@ -139,19 +140,9 @@ export class Core {
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
-        let transaction: types.TransactionRequest =
-            await this.populateTransaction(to, value, data);
+        const transaction = await this.populateTransaction(to, value, data);
 
-        const signature = await this.signTransaction(transaction);
-
-        transaction = this.attachSignature(
-            transaction,
-            signature,
-            validatorAddress,
-            hookData,
-        );
-
-        return this.provider.sendTransaction(utils.serialize(transaction));
+        return transaction.send(validatorAddress, hookData);
     }
 
     public async transfer(
@@ -210,81 +201,5 @@ export class Core {
         });
 
         return tokenBalances;
-    }
-}
-
-class PopulatedTransaction {
-    private transaction: types.TransactionRequest;
-    private provider: Provider;
-    private username: string;
-    private publicKey: string;
-    private messageSignerFn: (
-        username: string,
-        transaction: string,
-    ) => Promise<string>;
-
-    constructor(
-        transaction: types.TransactionRequest,
-        provider: Provider,
-        username: string,
-        publicKey: string,
-        messageSignerFn: (
-            username: string,
-            transaction: string,
-        ) => Promise<string>,
-    ) {
-        this.transaction = transaction;
-        this.provider = provider;
-        this.username = username;
-        this.publicKey = publicKey;
-        this.messageSignerFn = messageSignerFn;
-    }
-
-    public attachSignature(
-        transaction: types.TransactionRequest,
-        signature: string,
-        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
-        hookData: Array<ethers.utils.BytesLike> = [],
-    ): types.TransactionRequest {
-        const formatSignature = abiCoder.encode(
-            ['bytes', 'address', 'bytes[]'],
-            [signature, validatorAddress, hookData],
-        );
-        return {
-            ...transaction,
-            customData: {
-                ...transaction.customData,
-                customSignature: formatSignature,
-            },
-        };
-    }
-
-    public async signTransaction(
-        _transaction: types.TransactionRequest,
-    ): Promise<string> {
-        const signedTxHash = EIP712Signer.getSignedDigest(_transaction);
-
-        const signature = await this.messageSignerFn(
-            this.username,
-            signedTxHash.toString().slice(2),
-        );
-        const fatSignature = await getFatSignature(signature, this.publicKey);
-        return fatSignature;
-    }
-
-    async send(
-        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
-        hookData: Array<ethers.utils.BytesLike> = [],
-    ): Promise<types.TransactionResponse> {
-        const signature = await this.signTransaction(this.transaction);
-        const transactionWithSignature = this.attachSignature(
-            this.transaction,
-            signature,
-            validatorAddress,
-            hookData,
-        );
-        return this.provider.sendTransaction(
-            utils.serialize(transactionWithSignature),
-        );
     }
 }
