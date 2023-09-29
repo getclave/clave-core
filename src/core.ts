@@ -13,7 +13,7 @@ import { Contract } from '.';
 import type { Aggregate3Response, ICore, JsonFragment } from './types';
 import { DEFAULT_GAS_LIMIT } from './types';
 
-export class Core implements ICore {
+export class Core {
     provider: Provider;
     private _publicAddress: string;
     private _username: string;
@@ -45,7 +45,7 @@ export class Core implements ICore {
         data = '0x',
         gasLimit = DEFAULT_GAS_LIMIT,
         customSignature?: string,
-    ): Promise<types.TransactionRequest> {
+    ): Promise<PopulatedTransaction> {
         const gasPrice = await this.provider.getGasPrice();
         const chainId = (await this.provider.getNetwork()).chainId;
         const nonce = await this.provider.getTransactionCount(
@@ -72,8 +72,15 @@ export class Core implements ICore {
                 await this.provider.estimateGas(transaction)
             ).toNumber();
         }
+        const populatedTransaction = new PopulatedTransaction(
+            { ...transaction, gasLimit },
+            this.provider,
+            this._username,
+            this._publicKey,
+            this._messageSignerFn,
+        );
 
-        return { ...transaction, gasLimit };
+        return populatedTransaction;
     }
 
     public attachSignature(
@@ -203,5 +210,81 @@ export class Core implements ICore {
         });
 
         return tokenBalances;
+    }
+}
+
+class PopulatedTransaction {
+    private transaction: types.TransactionRequest;
+    private provider: Provider;
+    private username: string;
+    private publicKey: string;
+    private messageSignerFn: (
+        username: string,
+        transaction: string,
+    ) => Promise<string>;
+
+    constructor(
+        transaction: types.TransactionRequest,
+        provider: Provider,
+        username: string,
+        publicKey: string,
+        messageSignerFn: (
+            username: string,
+            transaction: string,
+        ) => Promise<string>,
+    ) {
+        this.transaction = transaction;
+        this.provider = provider;
+        this.username = username;
+        this.publicKey = publicKey;
+        this.messageSignerFn = messageSignerFn;
+    }
+
+    public attachSignature(
+        transaction: types.TransactionRequest,
+        signature: string,
+        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
+        hookData: Array<ethers.utils.BytesLike> = [],
+    ): types.TransactionRequest {
+        const formatSignature = abiCoder.encode(
+            ['bytes', 'address', 'bytes[]'],
+            [signature, validatorAddress, hookData],
+        );
+        return {
+            ...transaction,
+            customData: {
+                ...transaction.customData,
+                customSignature: formatSignature,
+            },
+        };
+    }
+
+    public async signTransaction(
+        _transaction: types.TransactionRequest,
+    ): Promise<string> {
+        const signedTxHash = EIP712Signer.getSignedDigest(_transaction);
+
+        const signature = await this.messageSignerFn(
+            this.username,
+            signedTxHash.toString().slice(2),
+        );
+        const fatSignature = await getFatSignature(signature, this.publicKey);
+        return fatSignature;
+    }
+
+    async send(
+        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
+        hookData: Array<ethers.utils.BytesLike> = [],
+    ): Promise<types.TransactionResponse> {
+        const signature = await this.signTransaction(this.transaction);
+        const transactionWithSignature = this.attachSignature(
+            this.transaction,
+            signature,
+            validatorAddress,
+            hookData,
+        );
+        return this.provider.sendTransaction(
+            utils.serialize(transactionWithSignature),
+        );
     }
 }
