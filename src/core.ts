@@ -67,10 +67,14 @@ export class Core implements ICore {
             },
         };
 
-        if (gasLimit === DEFAULT_GAS_LIMIT) {
-            gasLimit = (
-                await this.provider.estimateGas(transaction)
-            ).toNumber();
+        try {
+            if (gasLimit === DEFAULT_GAS_LIMIT) {
+                gasLimit = (
+                    await this.provider.estimateGas(transaction)
+                ).toNumber();
+            }
+        } catch (err) {
+            console.error(err);
         }
 
         return { ...transaction, gasLimit };
