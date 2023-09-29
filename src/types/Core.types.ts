@@ -3,7 +3,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import type { BigNumber, providers } from 'ethers';
+import type { BigNumber, providers, utils } from 'ethers';
 import type { Provider, types } from 'zksync-web3';
 
 export interface ICore {
@@ -20,6 +20,18 @@ export interface ICore {
         customSignature: string,
     ): types.TransactionRequest;
     signTransaction(_transaction: types.TransactionRequest): Promise<string>;
+    sendPopulatedTransaction(
+        transaction: types.TransactionRequest,
+        validatorAddress: string,
+        hookData: Array<utils.BytesLike>,
+    ): Promise<types.TransactionResponse>;
+    sendTransaction(
+        to: string,
+        value: string,
+        data?: string,
+        validatorAddress?: string,
+        hookData?: Array<utils.BytesLike>,
+    ): Promise<types.TransactionResponse>;
     transfer(_to: string, _value: string): Promise<types.TransactionResponse>;
     // eslint-disable-next-line
     Contract(contractAddress: string, abi: Array<JsonFragment | string>): any;
