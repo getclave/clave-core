@@ -108,6 +108,28 @@ export class Core implements ICore {
         return fatSignature;
     }
 
+    public async sendTransaction(
+        to: string,
+        value: string,
+        data: string,
+        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
+        hookData: Array<ethers.utils.BytesLike> = [],
+    ): Promise<types.TransactionResponse> {
+        let transaction: types.TransactionRequest =
+            await this.populateTransaction(to, value, data);
+
+        const signature = await this.signTransaction(transaction);
+
+        transaction = this.attachSignature(
+            transaction,
+            signature,
+            validatorAddress,
+            hookData,
+        );
+
+        return this.provider.sendTransaction(utils.serialize(transaction));
+    }
+
     public async transfer(
         to: string,
         value: string,
