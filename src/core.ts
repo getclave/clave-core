@@ -111,7 +111,7 @@ export class Core implements ICore {
     public async sendTransaction(
         to: string,
         value: string,
-        data: string,
+        data = '0x',
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
@@ -136,19 +136,13 @@ export class Core implements ICore {
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
-        let transaction: types.TransactionRequest =
-            await this.populateTransaction(to, value);
-
-        const signature = await this.signTransaction(transaction);
-
-        transaction = this.attachSignature(
-            transaction,
-            signature,
+        return this.sendTransaction(
+            to,
+            value,
+            '0x',
             validatorAddress,
             hookData,
         );
-
-        return this.provider.sendTransaction(utils.serialize(transaction));
     }
 
     public Contract(
