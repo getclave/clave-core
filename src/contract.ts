@@ -4,7 +4,6 @@
  * Proprietary and confidential
  */
 import { ethers } from 'ethers';
-import { utils } from 'zksync-web3';
 import type { types } from 'zksync-web3';
 
 import type { Core } from '.';

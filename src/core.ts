@@ -4,12 +4,12 @@
  * Proprietary and confidential
  */
 import { CONSTANT_ADDRESSES, ERC20ABI, MULTICALL3_ABI } from 'clave-constants';
-import { abiCoder, getFatSignature } from 'clave-utils';
 import { BigNumber, ethers } from 'ethers';
-import { EIP712Signer, Contract as ZksyncContract, utils } from 'zksync-web3';
+import { Contract as ZksyncContract, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
 import { Contract } from '.';
+import { PopulatedTransaction } from './populatedTransaction';
 import type { Aggregate3Response, ICore, JsonFragment } from './types';
 import { DEFAULT_GAS_LIMIT } from './types';
 
@@ -45,7 +45,7 @@ export class Core implements ICore {
         data = '0x',
         gasLimit = DEFAULT_GAS_LIMIT,
         customSignature?: string,
-    ): Promise<types.TransactionRequest> {
+    ): Promise<PopulatedTransaction> {
         const gasPrice = await this.provider.getGasPrice();
         const chainId = (await this.provider.getNetwork()).chainId;
         const nonce = await this.provider.getTransactionCount(
@@ -67,49 +67,24 @@ export class Core implements ICore {
             },
         };
 
-        try {
-            if (gasLimit === DEFAULT_GAS_LIMIT) {
+        if (gasLimit === DEFAULT_GAS_LIMIT) {
+            try {
                 gasLimit = (
                     await this.provider.estimateGas(transaction)
                 ).toNumber();
+            } catch (e) {
+                console.log(e);
             }
-        } catch (err) {
-            console.error(err);
         }
-
-        return { ...transaction, gasLimit };
-    }
-
-    public attachSignature(
-        transaction: types.TransactionRequest,
-        signature: string,
-        validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
-        hookData: Array<ethers.utils.BytesLike> = [],
-    ): types.TransactionRequest {
-        const formatSignature = abiCoder.encode(
-            ['bytes', 'address', 'bytes[]'],
-            [signature, validatorAddress, hookData],
-        );
-        return {
-            ...transaction,
-            customData: {
-                ...transaction.customData,
-                customSignature: formatSignature,
-            },
-        };
-    }
-
-    public async signTransaction(
-        _transaction: types.TransactionRequest,
-    ): Promise<string> {
-        const signedTxHash = EIP712Signer.getSignedDigest(_transaction);
-
-        const signature = await this._messageSignerFn(
+        const populatedTransaction = new PopulatedTransaction(
+            { ...transaction, gasLimit },
+            this.provider,
             this._username,
-            signedTxHash.toString().slice(2),
+            this._publicKey,
+            this._messageSignerFn,
         );
-        const fatSignature = await getFatSignature(signature, this._publicKey);
-        return fatSignature;
+
+        return populatedTransaction;
     }
 
     public async sendTransaction(
@@ -119,19 +94,9 @@ export class Core implements ICore {
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
-        let transaction: types.TransactionRequest =
-            await this.populateTransaction(to, value, data);
+        const transaction = await this.populateTransaction(to, value, data);
 
-        const signature = await this.signTransaction(transaction);
-
-        transaction = this.attachSignature(
-            transaction,
-            signature,
-            validatorAddress,
-            hookData,
-        );
-
-        return this.provider.sendTransaction(utils.serialize(transaction));
+        return await transaction.send(validatorAddress, hookData);
     }
 
     public async transfer(

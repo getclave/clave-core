@@ -25,17 +25,34 @@ async function main() {
     // Initialize Core
     const core = new Core(provider, publicAddress, username, publicKey, sign);
 
-    // Initialize Contract
-    const contract = core.Contract(
-        '0x123...321', // Contract address
-        [], // Contract ABI
+    // Populated Transaction
+    const receiverAddress = '0x114B242D931B47D5cDcEe7AF065856f70ee278C4';
+    const transferAmount = '0';
+    const calldata = '0x23423423';
+    const populatedTransaction = await core.populateTransaction(
+        receiverAddress,
+        transferAmount,
+        calldata,
     );
+    // transaction data
+    populatedTransaction.transaction;
+    // send
+    const validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS;
+    const hookData: Array<ethers.utils.BytesLike> = [];
+    populatedTransaction.send(validatorAddress, hookData);
 
     // Basic transfer function
     const transferFunction = async (): Promise<ethers.Transaction> => {
         const receiverAddress = '0x114B242D931B47D5cDcEe7AF065856f70ee278C4';
         const transferAmount = '0.001';
-        const tx = await core.transfer(receiverAddress, transferAmount);
+        const validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS;
+        const hookData: Array<ethers.utils.BytesLike> = [];
+        const tx = await core.transfer(
+            receiverAddress,
+            transferAmount,
+            validatorAddress,
+            hookData,
+        );
     };
 
     // Send transaction
@@ -43,13 +60,23 @@ async function main() {
         const receiverAddress = '0x114B242D931B47D5cDcEe7AF065856f70ee278C4';
         const transferAmount = '0';
         const calldata = '0x23423423';
+        const validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS;
+        const hookData: Array<ethers.utils.BytesLike> = [];
 
-        const tx = await core.transfer(
+        const tx = await core.sendTransaction(
             receiverAddress,
             transferAmount,
             calldata,
+            validatorAddress,
+            hookData,
         );
     };
+
+    // Initialize Contract
+    const contract = core.Contract(
+        '0x123...321', // Contract address
+        [], // Contract ABI
+    );
 
     // Read contract
     const getCount = async (): Promise<void> => {

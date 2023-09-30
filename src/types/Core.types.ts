@@ -3,7 +3,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import type { BigNumber, providers } from 'ethers';
+import type { BigNumber, providers, utils } from 'ethers';
 import type { Provider, types } from 'zksync-web3';
 
 export interface ICore {
@@ -14,15 +14,24 @@ export interface ICore {
         data?: string,
         gasLimit?: number,
         customSignature?: string,
-    ): Promise<types.TransactionRequest>;
-    attachSignature(
-        transaction: types.TransactionRequest,
-        customSignature: string,
-    ): types.TransactionRequest;
-    signTransaction(_transaction: types.TransactionRequest): Promise<string>;
-    transfer(_to: string, _value: string): Promise<types.TransactionResponse>;
-    // eslint-disable-next-line
-    Contract(contractAddress: string, abi: Array<JsonFragment | string>): any;
+    ): Promise<IPopulatedTransaction>;
+    sendTransaction(
+        to: string,
+        value: string,
+        data?: string,
+        validatorAddress?: string,
+        hookData?: Array<utils.BytesLike>,
+    ): Promise<TransactionResponse>;
+    transfer(
+        to: string,
+        value: string,
+        validatorAddress?: string,
+        hookData?: Array<utils.BytesLike>,
+    ): Promise<TransactionResponse>;
+    Contract(
+        contractAddress: string,
+        abi: Array<JsonFragment | string>,
+    ): IContract;
     getBalancesWithMultiCall3(
         tokenAddresses: Array<string>,
     ): Promise<Array<BigNumber>>;
@@ -97,3 +106,20 @@ export interface L2ToL1Log {
 export const DEFAULT_GAS_LIMIT = 1000000;
 
 export type Aggregate3Response = { success: boolean; returnData: string };
+
+export interface IPopulatedTransaction {
+    transaction: types.TransactionRequest;
+    attachSignature(
+        transaction: types.TransactionRequest,
+        signature: string,
+        validatorAddress?: string,
+        hookData?: Array<utils.BytesLike>,
+    ): types.TransactionRequest;
+
+    signTransaction(transaction: types.TransactionRequest): Promise<string>;
+
+    send(
+        validatorAddress?: string,
+        hookData?: Array<utils.BytesLike>,
+    ): Promise<types.TransactionResponse>;
+}
