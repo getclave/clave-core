@@ -83,6 +83,14 @@ async function main() {
         const count = await contract.read('count', []);
     };
 
+    // Populate write contract
+    const increase = async (): Promise<ethers.Transaction> => {
+        const tx = await contract.populateWrite('increase', [7]);
+        const validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS;
+        const hookData: Array<ethers.utils.BytesLike> = [];
+        await tx.send(validatorAddress, hookData)
+    };
+
     // Write contract
     const increase = async (): Promise<ethers.Transaction> => {
         const tx = await contract.write('increase', [7]);
