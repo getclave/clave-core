@@ -38,6 +38,13 @@ export interface ICore {
 }
 
 export interface IContract {
+    populateWrite<Params extends Array<unknown>>(
+        functionName: string,
+        params: Params,
+        value: BigNumber,
+        gasLimit?: number,
+        customSignature?: string,
+    ): Promise<IPopulatedTransaction>;
     write<Params extends Array<unknown>>(
         functionName: string,
         params: Params,

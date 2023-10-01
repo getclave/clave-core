@@ -8,6 +8,7 @@ import type { types } from 'zksync-web3';
 
 import type { Core } from '.';
 import { CONSTANT_ADDRESSES } from '../../clave-constants/address/index';
+import type { PopulatedTransaction } from './populatedTransaction';
 import type { IContract, JsonFragment } from './types';
 
 export class Contract implements IContract {
@@ -33,6 +34,24 @@ export class Contract implements IContract {
         const calldata = iface.encodeFunctionData(functionName, params);
 
         return calldata;
+    }
+
+    public async populateWrite<Params extends Array<unknown>>(
+        functionName: string,
+        params: Params,
+        value = BigNumber.from(0),
+        gasLimit?: number,
+        customSignature?: string,
+    ): Promise<PopulatedTransaction> {
+        const calldata = this._getExecutionCallData(functionName, params);
+
+        return this._claveBase.populateTransaction(
+            this._contractAddress,
+            value,
+            calldata,
+            gasLimit,
+            customSignature,
+        );
     }
 
     public async write<Params extends Array<unknown>>(
