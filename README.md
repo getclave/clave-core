@@ -27,7 +27,7 @@ async function main() {
 
     // Populated Transaction
     const receiverAddress = '0x114B242D931B47D5cDcEe7AF065856f70ee278C4';
-    const transferAmount = '0';
+    const transferAmount = BigNumber.from(0);
     const calldata = '0x23423423';
     const populatedTransaction = await core.populateTransaction(
         receiverAddress,
@@ -44,7 +44,7 @@ async function main() {
     // Basic transfer function
     const transferFunction = async (): Promise<ethers.Transaction> => {
         const receiverAddress = '0x114B242D931B47D5cDcEe7AF065856f70ee278C4';
-        const transferAmount = '0.001';
+        const transferAmount = ethers.utils.parseEther("0.001");
         const validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS;
         const hookData: Array<ethers.utils.BytesLike> = [];
         const tx = await core.transfer(
@@ -58,7 +58,7 @@ async function main() {
     // Send transaction
     const SendTransactionFunction = async (): Promise<ethers.Transaction> => {
         const receiverAddress = '0x114B242D931B47D5cDcEe7AF065856f70ee278C4';
-        const transferAmount = '0';
+        const transferAmount = BigNumber.from(0);
         const calldata = '0x23423423';
         const validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS;
         const hookData: Array<ethers.utils.BytesLike> = [];
