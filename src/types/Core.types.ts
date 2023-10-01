@@ -10,21 +10,21 @@ export interface ICore {
     provider: Provider;
     populateTransaction(
         to: string,
-        value?: string,
+        value?: BigNumber,
         data?: string,
         gasLimit?: number,
         customSignature?: string,
     ): Promise<IPopulatedTransaction>;
     sendTransaction(
         to: string,
-        value: string,
+        value: BigNumber,
         data?: string,
         validatorAddress?: string,
         hookData?: Array<utils.BytesLike>,
     ): Promise<TransactionResponse>;
     transfer(
         to: string,
-        value: string,
+        value: BigNumber,
         validatorAddress?: string,
         hookData?: Array<utils.BytesLike>,
     ): Promise<TransactionResponse>;
@@ -41,7 +41,7 @@ export interface IContract {
     write<Params extends Array<unknown>>(
         functionName: string,
         params: Params,
-        value: string,
+        value: BigNumber,
     ): Promise<types.TransactionResponse>;
     read<Params extends Array<unknown>>(
         functionName: string,

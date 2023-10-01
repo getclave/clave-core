@@ -41,7 +41,7 @@ export class Core implements ICore {
 
     public async populateTransaction(
         to: string,
-        value = '0',
+        value = BigNumber.from(0),
         data = '0x',
         gasLimit = DEFAULT_GAS_LIMIT,
         customSignature?: string,
@@ -56,7 +56,7 @@ export class Core implements ICore {
             data,
             to,
             from: this._publicAddress,
-            value: ethers.utils.parseEther(value),
+            value,
             chainId,
             nonce,
             type: 113,
@@ -89,7 +89,7 @@ export class Core implements ICore {
 
     public async sendTransaction(
         to: string,
-        value: string,
+        value: BigNumber,
         data = '0x',
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
@@ -101,7 +101,7 @@ export class Core implements ICore {
 
     public async transfer(
         to: string,
-        value: string,
+        value: BigNumber,
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {

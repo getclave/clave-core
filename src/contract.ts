@@ -3,7 +3,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import type { types } from 'zksync-web3';
 
 import type { Core } from '.';
@@ -38,7 +38,7 @@ export class Contract implements IContract {
     public async write<Params extends Array<unknown>>(
         functionName: string,
         params: Params,
-        value = '0',
+        value = BigNumber.from(0),
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
