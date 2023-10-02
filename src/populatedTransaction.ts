@@ -4,7 +4,7 @@
  * Proprietary and confidential
  */
 import { CONSTANT_ADDRESSES } from 'clave-constants';
-import { abiCoder, getFatSignature } from 'clave-utils';
+import { abiCoder, getFatSignature, parseHex } from 'clave-utils';
 import { type ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
@@ -64,7 +64,7 @@ export class PopulatedTransaction implements IPopulatedTransaction {
 
         const signature = await this.messageSignerFn(
             this.username,
-            signedTxHash.toString().slice(2),
+            parseHex(signedTxHash.toString()),
         );
         const fatSignature = await getFatSignature(signature, this.publicKey);
         return fatSignature;
@@ -81,7 +81,6 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             validatorAddress,
             hookData,
         );
-        console.log(transactionWithSignature);
         return await this.provider.sendTransaction(
             utils.serialize(transactionWithSignature),
         );
