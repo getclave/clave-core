@@ -81,7 +81,8 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             validatorAddress,
             hookData,
         );
-        return this.provider.sendTransaction(
+        console.log(transactionWithSignature);
+        return await this.provider.sendTransaction(
             utils.serialize(transactionWithSignature),
         );
     }
