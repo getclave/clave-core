@@ -9,7 +9,7 @@ import { type ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
-import type { IPopulatedTransaction } from './types';
+import { DEFAULT_GAS_LIMIT, type IPopulatedTransaction } from './types';
 
 export class PopulatedTransaction implements IPopulatedTransaction {
     transaction: types.TransactionRequest;
@@ -38,8 +38,11 @@ export class PopulatedTransaction implements IPopulatedTransaction {
         this.messageSignerFn = messageSignerFn;
     }
 
+    public getProvider(): Provider {
+        return this.provider;
+    }
+
     public attachSignature(
-        transaction: types.TransactionRequest,
         signature: string,
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
@@ -49,18 +52,16 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             [signature, validatorAddress, hookData],
         );
         return {
-            ...transaction,
+            ...this.transaction,
             customData: {
-                ...transaction.customData,
+                ...this.transaction.customData,
                 customSignature: formatSignature,
             },
         };
     }
 
-    public async signTransaction(
-        _transaction: types.TransactionRequest,
-    ): Promise<string> {
-        const signedTxHash = EIP712Signer.getSignedDigest(_transaction);
+    public async signTransaction(): Promise<string> {
+        const signedTxHash = EIP712Signer.getSignedDigest(this.transaction);
 
         const signature = await this.messageSignerFn(
             this.username,
@@ -70,13 +71,22 @@ export class PopulatedTransaction implements IPopulatedTransaction {
         return fatSignature;
     }
 
+    public async estimateFee(): Promise<number> {
+        try {
+            return (
+                await this.provider.estimateGas(this.transaction)
+            ).toNumber();
+        } catch {
+            return DEFAULT_GAS_LIMIT;
+        }
+    }
+
     async send(
         validatorAddress = CONSTANT_ADDRESSES.VALIDATOR_ADDRESS,
         hookData: Array<ethers.utils.BytesLike> = [],
     ): Promise<types.TransactionResponse> {
-        const signature = await this.signTransaction(this.transaction);
+        const signature = await this.signTransaction();
         const transactionWithSignature = this.attachSignature(
-            this.transaction,
             signature,
             validatorAddress,
             hookData,

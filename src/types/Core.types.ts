@@ -117,13 +117,12 @@ export type Aggregate3Response = { success: boolean; returnData: string };
 export interface IPopulatedTransaction {
     transaction: types.TransactionRequest;
     attachSignature(
-        transaction: types.TransactionRequest,
         signature: string,
         validatorAddress?: string,
         hookData?: Array<utils.BytesLike>,
     ): types.TransactionRequest;
 
-    signTransaction(transaction: types.TransactionRequest): Promise<string>;
+    signTransaction(): Promise<string>;
 
     send(
         validatorAddress?: string,
