@@ -4,7 +4,12 @@
  * Proprietary and confidential
  */
 import { CONSTANT_ADDRESSES } from 'clave-constants';
-import { abiCoder, getFatSignature, parseHex } from 'clave-utils';
+import {
+    abiCoder,
+    derSignatureToRs,
+    getFatSignature,
+    parseHex,
+} from 'clave-utils';
 import { type ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
@@ -48,6 +53,7 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             ['bytes', 'address', 'bytes[]'],
             [signature, validatorAddress, hookData],
         );
+        console.log(formatSignature.length);
         return {
             ...transaction,
             customData: {
@@ -66,8 +72,13 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             this.username,
             parseHex(signedTxHash.toString()),
         );
-        const fatSignature = await getFatSignature(signature, this.publicKey);
-        return fatSignature;
+        const { r, s } = derSignatureToRs(signature);
+        // const fatSignature = await getFatSignature(
+        //     r._hex + s._hex.slice(2),
+        //     this.publicKey,
+        // );
+        console.log((r._hex + s._hex.slice(2)).length);
+        return r._hex + s._hex.slice(2);
     }
 
     async send(
