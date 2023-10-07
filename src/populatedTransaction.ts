@@ -4,12 +4,7 @@
  * Proprietary and confidential
  */
 import { CONSTANT_ADDRESSES } from 'clave-constants';
-import {
-    abiCoder,
-    derSignatureToRs,
-    getFatSignature,
-    parseHex,
-} from 'clave-utils';
+import { FString, abiCoder, derSignatureToRs, parseHex } from 'clave-utils';
 import { type ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
@@ -73,12 +68,7 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             parseHex(signedTxHash.toString()),
         );
         const { r, s } = derSignatureToRs(signature);
-        // const fatSignature = await getFatSignature(
-        //     r._hex + s._hex.slice(2),
-        //     this.publicKey,
-        // );
-        console.log((r._hex + s._hex.slice(2)).length);
-        return r._hex + s._hex.slice(2);
+        return FString.concat(r._hex, FString.parseHex(s._hex));
     }
 
     async send(
