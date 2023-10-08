@@ -51,7 +51,7 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             ['bytes', 'address', 'bytes[]'],
             [signature, validatorAddress, hookData],
         );
-        console.log(formatSignature.length);
+
         return {
             ...this.transaction,
             customData: {
