@@ -66,7 +66,6 @@ export class Core implements ICore {
                 customSignature,
             },
         };
-
         if (gasLimit === DEFAULT_GAS_LIMIT) {
             try {
                 gasLimit = (
@@ -76,6 +75,7 @@ export class Core implements ICore {
                 console.log(e);
             }
         }
+
         const populatedTransaction = new PopulatedTransaction(
             { ...transaction, gasLimit },
             this.provider,

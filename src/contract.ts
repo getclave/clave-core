@@ -44,14 +44,15 @@ export class Contract implements IContract {
         customSignature?: string,
     ): Promise<PopulatedTransaction> {
         const calldata = this._getExecutionCallData(functionName, params);
-
-        return this._claveBase.populateTransaction(
+        const populated = this._claveBase.populateTransaction(
             this._contractAddress,
             value,
             calldata,
             gasLimit,
             customSignature,
         );
+
+        return populated;
     }
 
     public async write<Params extends Array<unknown>>(
