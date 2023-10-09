@@ -75,7 +75,7 @@ export class Contract implements IContract {
 
     public async read<Params extends Array<unknown> = [], ReturnType = unknown>(
         functionName: string,
-        ...params: Params
+        params: Params,
     ): Promise<ReturnType> {
         const contract = new ethers.Contract(
             this._contractAddress,

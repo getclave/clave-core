@@ -65,23 +65,29 @@ export class PopulatedTransaction implements IPopulatedTransaction {
 
     public async attachPaymaster(
         paymasterAddress: string,
-        tokenAddress?: string,
+        tokenAddress: string,
     ): Promise<types.TransactionRequest> {
-        let paymasterParams: types.PaymasterParams | null = null;
-        if (tokenAddress == null) {
-            paymasterParams = utils.getPaymasterParams(paymasterAddress, {
-                type: 'General',
-                innerInput: new Uint8Array(),
-            });
-        } else {
-            const oraclePayload = await this.genOraclePayload(paymasterAddress);
-            paymasterParams = utils.getPaymasterParams(paymasterAddress, {
-                type: 'ApprovalBased',
-                token: tokenAddress,
-                innerInput: oraclePayload,
-                minimalAllowance: constants.Zero,
-            });
-        }
+        const oraclePayload = await this.genOraclePayload(paymasterAddress);
+        const paymasterParams = utils.getPaymasterParams(paymasterAddress, {
+            type: 'ApprovalBased',
+            token: tokenAddress,
+            innerInput: oraclePayload,
+            minimalAllowance: constants.Zero,
+        });
+        // if (tokenAddress == null) {
+        //     paymasterParams = utils.getPaymasterParams(paymasterAddress, {
+        //         type: 'General',
+        //         innerInput: new Uint8Array(),
+        //     });
+        // } else {
+        //     const oraclePayload = await this.genOraclePayload(paymasterAddress);
+        //     paymasterParams = utils.getPaymasterParams(paymasterAddress, {
+        //         type: 'ApprovalBased',
+        //         token: tokenAddress,
+        //         innerInput: oraclePayload,
+        //         minimalAllowance: constants.Zero,
+        //     });
+        // }
 
         const newTransaction: types.TransactionRequest = {
             ...this.transaction,
@@ -127,7 +133,6 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             hookData,
         );
         this.transaction = transactionWithSignature;
-        console.log(transactionWithSignature);
         return await this.provider.sendTransaction(
             utils.serialize(transactionWithSignature),
         );
