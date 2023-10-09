@@ -80,7 +80,6 @@ export class Core implements ICore {
             { ...transaction, gasLimit },
             this.provider,
             this._username,
-            this._publicKey,
             this._messageSignerFn,
         );
 

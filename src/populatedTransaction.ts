@@ -3,11 +3,13 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import { CONSTANT_ADDRESSES } from 'clave-constants';
+import { DataServiceWrapper } from '@redstone-finance/evm-connector/dist/src/wrappers/DataServiceWrapper';
+import { CONSTANT_ADDRESSES, PAYMASTERABI } from 'clave-constants';
 import { FString, abiCoder, derSignatureToRs, parseHex } from 'clave-utils';
-import { type ethers } from 'ethers';
+import { constants, type ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
+import { Contract } from 'zksync-web3';
 
 import { DEFAULT_GAS_LIMIT, type IPopulatedTransaction } from './types';
 
@@ -15,7 +17,6 @@ export class PopulatedTransaction implements IPopulatedTransaction {
     transaction: types.TransactionRequest;
     private provider: Provider;
     private username: string;
-    private publicKey: string;
     private messageSignerFn: (
         username: string,
         transaction: string,
@@ -25,7 +26,6 @@ export class PopulatedTransaction implements IPopulatedTransaction {
         transaction: types.TransactionRequest,
         provider: Provider,
         username: string,
-        publicKey: string,
         messageSignerFn: (
             username: string,
             transaction: string,
@@ -34,7 +34,6 @@ export class PopulatedTransaction implements IPopulatedTransaction {
         this.transaction = transaction;
         this.provider = provider;
         this.username = username;
-        this.publicKey = publicKey;
         this.messageSignerFn = messageSignerFn;
     }
 
@@ -52,13 +51,48 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             [signature, validatorAddress, hookData],
         );
 
-        return {
+        const newTransaction = {
             ...this.transaction,
             customData: {
                 ...this.transaction.customData,
                 customSignature: formatSignature,
             },
         };
+
+        this.transaction = newTransaction;
+        return newTransaction;
+    }
+
+    public async attachPaymaster(
+        paymasterAddress: string,
+        tokenAddress?: string,
+    ): Promise<types.TransactionRequest> {
+        let paymasterParams: types.PaymasterParams | null = null;
+        if (tokenAddress == null) {
+            paymasterParams = utils.getPaymasterParams(paymasterAddress, {
+                type: 'General',
+                innerInput: new Uint8Array(),
+            });
+        } else {
+            const oraclePayload = await this.genOraclePayload(paymasterAddress);
+            paymasterParams = utils.getPaymasterParams(paymasterAddress, {
+                type: 'ApprovalBased',
+                token: tokenAddress,
+                innerInput: oraclePayload,
+                minimalAllowance: constants.Zero,
+            });
+        }
+
+        const newTransaction: types.TransactionRequest = {
+            ...this.transaction,
+            customData: {
+                ...this.transaction.customData,
+                paymasterParams,
+            },
+        };
+
+        this.transaction = newTransaction;
+        return newTransaction;
     }
 
     public async signTransaction(): Promise<string> {
@@ -92,8 +126,41 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             validatorAddress,
             hookData,
         );
+        this.transaction = transactionWithSignature;
+        console.log(transactionWithSignature);
         return await this.provider.sendTransaction(
             utils.serialize(transactionWithSignature),
         );
     }
+
+    private async genOraclePayload(paymasterAddress: string): Promise<string> {
+        const wrapper = new DataServiceWrapper({
+            dataServiceId: 'redstone-primary-prod',
+            dataFeeds: ['ETH'],
+        });
+
+        const paymasterContract = new Contract(
+            paymasterAddress,
+            PAYMASTERABI,
+            this.provider,
+        );
+
+        const redstonePayload = await wrapper.getRedstonePayloadForManualUsage(
+            paymasterContract,
+        );
+        return redstonePayload;
+    }
 }
+
+export const getOraclePayload = async (
+    paymasterContract: Contract,
+): Promise<string> => {
+    const wrapper = new DataServiceWrapper({
+        dataServiceId: 'redstone-primary-prod',
+        dataFeeds: ['ETH'],
+    });
+    const redstonePayload = await wrapper.getRedstonePayloadForManualUsage(
+        paymasterContract,
+    );
+    return redstonePayload;
+};
