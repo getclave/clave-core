@@ -133,6 +133,7 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             hookData,
         );
         this.transaction = transactionWithSignature;
+        console.log(transactionWithSignature);
         return await this.provider.sendTransaction(
             utils.serialize(transactionWithSignature),
         );

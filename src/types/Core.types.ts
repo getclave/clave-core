@@ -110,7 +110,7 @@ export interface L2ToL1Log {
     logIndex: number;
 }
 
-export const DEFAULT_GAS_LIMIT = 10000000;
+export const DEFAULT_GAS_LIMIT = 10_000_000;
 
 export type Aggregate3Response = { success: boolean; returnData: string };
 
