@@ -5,7 +5,7 @@
  */
 import { DataServiceWrapper } from '@redstone-finance/evm-connector/dist/src/wrappers/DataServiceWrapper';
 import { CONSTANT_ADDRESSES, PAYMASTERABI } from 'clave-constants';
-import { FString, abiCoder, derSignatureToRs, parseHex } from 'clave-utils';
+import { FString, abiCoder, derSignatureToRs } from 'clave-utils';
 import { constants, type ethers } from 'ethers';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
@@ -106,7 +106,7 @@ export class PopulatedTransaction implements IPopulatedTransaction {
 
         const signature = await this.messageSignerFn(
             this.username,
-            parseHex(signedTxHash.toString()),
+            FString.parseHex(signedTxHash.toString()),
         );
         const { r, s } = derSignatureToRs(signature);
         return FString.concat(r._hex, FString.parseHex(s._hex));
