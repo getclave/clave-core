@@ -7,6 +7,7 @@ import { DataServiceWrapper } from '@redstone-finance/evm-connector/dist/src/wra
 import { CONSTANT_ADDRESSES, PAYMASTERABI } from 'clave-constants';
 import { FString, abiCoder, derSignatureToRs } from 'clave-utils';
 import { constants, type ethers } from 'ethers';
+import { parseUnits } from 'ethers/lib/utils';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 import { Contract } from 'zksync-web3';
@@ -72,7 +73,7 @@ export class PopulatedTransaction implements IPopulatedTransaction {
             type: 'ApprovalBased',
             token: tokenAddress,
             innerInput: oraclePayload,
-            minimalAllowance: constants.Zero,
+            minimalAllowance: parseUnits('50', 18),
         });
         // if (tokenAddress == null) {
         //     paymasterParams = utils.getPaymasterParams(paymasterAddress, {
