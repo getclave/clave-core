@@ -6,7 +6,7 @@
 import { DataServiceWrapper } from '@redstone-finance/evm-connector/dist/src/wrappers/DataServiceWrapper';
 import { CONSTANT_ADDRESSES, PAYMASTERABI } from 'clave-constants';
 import { FString, abiCoder, derSignatureToRs } from 'clave-utils';
-import { constants, type ethers } from 'ethers';
+import { type ethers } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
 import { EIP712Signer, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
