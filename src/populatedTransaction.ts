@@ -66,29 +66,26 @@ export class PopulatedTransaction implements IPopulatedTransaction {
 
     public async attachPaymaster(
         paymasterAddress: string,
-        tokenAddress: string,
+        tokenAddress?: string,
     ): Promise<types.TransactionRequest> {
-        const oraclePayload = await this.genOraclePayload(paymasterAddress);
-        const paymasterParams = utils.getPaymasterParams(paymasterAddress, {
-            type: 'ApprovalBased',
-            token: tokenAddress,
-            innerInput: oraclePayload,
-            minimalAllowance: parseUnits('50', 18),
-        });
-        // if (tokenAddress == null) {
-        //     paymasterParams = utils.getPaymasterParams(paymasterAddress, {
-        //         type: 'General',
-        //         innerInput: new Uint8Array(),
-        //     });
-        // } else {
-        //     const oraclePayload = await this.genOraclePayload(paymasterAddress);
-        //     paymasterParams = utils.getPaymasterParams(paymasterAddress, {
-        //         type: 'ApprovalBased',
-        //         token: tokenAddress,
-        //         innerInput: oraclePayload,
-        //         minimalAllowance: constants.Zero,
-        //     });
-        // }
+        let paymasterParams;
+
+        // gasless paymaster
+        if (tokenAddress == null) {
+            paymasterParams = utils.getPaymasterParams(paymasterAddress, {
+                type: 'General',
+                innerInput: new Uint8Array(),
+            });
+        } else {
+            // erc20 paymaster
+            const oraclePayload = await this.genOraclePayload(paymasterAddress);
+            paymasterParams = utils.getPaymasterParams(paymasterAddress, {
+                type: 'ApprovalBased',
+                token: tokenAddress,
+                innerInput: oraclePayload,
+                minimalAllowance: parseUnits('50', 18),
+            });
+        }
 
         const newTransaction: types.TransactionRequest = {
             ...this.transaction,
