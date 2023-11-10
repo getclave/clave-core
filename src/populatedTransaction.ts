@@ -112,9 +112,7 @@ export class PopulatedTransaction implements IPopulatedTransaction {
 
     public async estimateFee(): Promise<number> {
         try {
-            return (
-                await this.provider.estimateGas(this.transaction)
-            ).toNumber();
+            return await estimateGas(this.provider, this.transaction);
         } catch {
             return DEFAULT_GAS_LIMIT;
         }
@@ -166,4 +164,19 @@ export const getOraclePayload = async (
         paymasterContract,
     );
     return redstonePayload;
+};
+
+export const estimateGas = async (
+    provider: Provider,
+    transaction: types.TransactionRequest,
+): Promise<number> => {
+    const EXTRA_GAS = 2_500_000;
+    try {
+        const estimatedGas = (
+            await provider.estimateGas(transaction)
+        ).toNumber();
+        return estimatedGas + EXTRA_GAS;
+    } catch (e) {
+        return DEFAULT_GAS_LIMIT;
+    }
 };

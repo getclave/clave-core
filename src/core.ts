@@ -9,7 +9,7 @@ import { Contract as ZksyncContract, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';
 
 import { Contract } from '.';
-import { PopulatedTransaction } from './populatedTransaction';
+import { PopulatedTransaction, estimateGas } from './populatedTransaction';
 import type { Aggregate3Response, ICore, JsonFragment } from './types';
 import { DEFAULT_GAS_LIMIT } from './types';
 
@@ -39,6 +39,12 @@ export class Core implements ICore {
         this._messageSignerFn = messageSignerFn;
     }
 
+    public async estimateGas(
+        transaction: types.TransactionRequest,
+    ): Promise<number> {
+        return await estimateGas(this.provider, transaction);
+    }
+
     public async populateTransaction(
         to: string,
         value = BigNumber.from(0),
@@ -66,15 +72,8 @@ export class Core implements ICore {
                 customSignature,
             },
         };
-        if (gasLimit === DEFAULT_GAS_LIMIT) {
-            try {
-                gasLimit = (
-                    await this.provider.estimateGas(transaction)
-                ).toNumber();
-            } catch (e) {
-                console.log(e);
-            }
-        }
+
+        gasLimit = await this.estimateGas(transaction);
 
         const populatedTransaction = new PopulatedTransaction(
             { ...transaction, gasLimit },
