@@ -170,7 +170,7 @@ export const estimateGas = async (
     provider: Provider,
     transaction: types.TransactionRequest,
 ): Promise<number> => {
-    const EXTRA_GAS = 2_500_000;
+    const EXTRA_GAS = 1_500_000;
     try {
         const estimatedGas = (
             await provider.estimateGas(transaction)
