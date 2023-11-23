@@ -17,16 +17,15 @@ export class Core implements ICore {
     provider: Provider;
     private _publicAddress: string;
     private _username: string;
-    private _publicKey: string;
     private _messageSignerFn: (
         username: string,
         transaction: string,
     ) => Promise<string>;
+
     constructor(
         provider: Provider,
         publicAddress: string,
         username: string,
-        publicKey: string,
         messageSignerFn: (
             _username: string,
             _transaction: string,
@@ -35,7 +34,6 @@ export class Core implements ICore {
         this.provider = provider;
         this._publicAddress = publicAddress;
         this._username = username;
-        this._publicKey = publicKey;
         this._messageSignerFn = messageSignerFn;
     }
 
