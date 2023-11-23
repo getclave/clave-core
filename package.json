@@ -5,7 +5,7 @@
   "author": "getclave.io",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "exit 0",
     "lint-check": "eslint \"./**/*.ts\""
   },
   "dependencies": {
