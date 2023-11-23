@@ -1,5 +1,5 @@
 {
-  "name": "clave-core",
+  "name": "@getclave/core",
   "version": "0.1.0",
   "description": "library containing everything you need to start working with zksync",
   "author": "getclave.io",
@@ -11,7 +11,8 @@
   "dependencies": {
     "ethers": "5.7.2",
     "zksync-web3": "0.14.3",
-    "clave-constants": "*"
+    "clave-constants": "*",
+    "@redstone-finance/evm-connector": "0.2.6"
   },
   "devDependencies": {
     "ts-node": "^10.9.1"
