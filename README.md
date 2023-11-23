@@ -19,11 +19,10 @@ import { Provider } from 'zksync-web3';
 async function main() {
     const provider = new Provider('https://testnet.era.zksync.dev');
     const username = 'my-key-pair';
-    const publicKey = await createKeyPair(username);
     const publicAddress = '0x123...321';
 
     // Initialize Core
-    const core = new Core(provider, publicAddress, username, publicKey, sign);
+    const core = new Core(provider, publicAddress, username, sign);
 
     // Populated Transaction
     const receiverAddress = '0x114B242D931B47D5cDcEe7AF065856f70ee278C4';
