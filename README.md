@@ -12,7 +12,7 @@ Library containing everything you need to start working with zksync
 ## API
 
 ```ts
-import { Core } from 'clave-core';
+import { Core } from '@getclave/core';
 import { sign } from 'expo-clave-tee';
 import { Provider } from 'zksync-web3';
 
