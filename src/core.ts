@@ -3,7 +3,11 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import { CONSTANT_ADDRESSES, ERC20ABI, MULTICALL3_ABI } from 'clave-constants';
+import {
+    CONSTANT_ADDRESSES,
+    ERC20ABI,
+    MULTICALL3_ABI,
+} from '@getclave/constants';
 import { BigNumber, ethers } from 'ethers';
 import { Contract as ZksyncContract, utils } from 'zksync-web3';
 import type { Provider, types } from 'zksync-web3';

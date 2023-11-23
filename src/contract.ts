@@ -3,7 +3,7 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
-import { CONSTANT_ADDRESSES } from 'clave-constants/address/index';
+import { CONSTANT_ADDRESSES } from '@getclave/constants';
 import { BigNumber, ethers } from 'ethers';
 import type { types } from 'zksync-web3';
 
