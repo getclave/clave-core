@@ -3,9 +3,9 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
+import { FString, abiCoder, derSignatureToRs } from '@getclave/utils';
 import { DataServiceWrapper } from '@redstone-finance/evm-connector/dist/src/wrappers/DataServiceWrapper';
 import { CONSTANT_ADDRESSES, PAYMASTERABI } from 'clave-constants';
-import { FString, abiCoder, derSignatureToRs } from 'clave-utils';
 import { type ethers } from 'ethers';
 import { parseUnits } from 'ethers/lib/utils';
 import { EIP712Signer, utils } from 'zksync-web3';
