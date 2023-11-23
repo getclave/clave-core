@@ -3,11 +3,11 @@
  * Unauthorized copying of this file, via any medium is strictly prohibited
  * Proprietary and confidential
  */
+import { CONSTANT_ADDRESSES } from 'clave-constants/address/index';
 import { BigNumber, ethers } from 'ethers';
 import type { types } from 'zksync-web3';
 
 import type { Core } from '.';
-import { CONSTANT_ADDRESSES } from '../../clave-constants/address/index';
 import type { PopulatedTransaction } from './populatedTransaction';
 import type { IContract, JsonFragment } from './types';
 
@@ -75,7 +75,7 @@ export class Contract implements IContract {
 
     public async read<Params extends Array<unknown> = [], ReturnType = unknown>(
         functionName: string,
-        params: Params,
+        params: Params = [] as never as Params,
     ): Promise<ReturnType> {
         const contract = new ethers.Contract(
             this._contractAddress,
