@@ -1,32 +1,80 @@
 {
   "name": "@getclave/core",
-  "version": "0.1.0",
-  "description": "library containing everything you need to start working with zksync",
-  "author": "getclave.io",
-  "main": "index.ts",
-  "scripts": {
-    "test": "exit 0",
-    "lint-check": "eslint \"./**/*.ts\""
+  "version": "1.1.8",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getclave/clave-core"
   },
-  "dependencies": {
-    "ethers": "5.7.2",
-    "zksync-web3": "0.14.3",
-    "@getclave/constants": "*",
-    "@redstone-finance/evm-connector": "0.2.6"
-  },
-  "devDependencies": {
-    "ts-node": "^10.9.1"
-  },
-  "keywords": [
-    "ethers",
-    "zksync-web3",
-    "zksync-account-abstraction",
-    "clave",
-    "clave-core"
-  ],
-  "repository": "https://github.com/getclave/clave-core",
   "bugs": {
     "url": "https://github.com/getclave/clave-core/issues"
   },
-  "license": "MIT"
+  "maintainers": [
+    {
+      "name": "Rafi Ersözlü",
+      "email": "rafi@clave.team"
+    },
+    {
+      "name": "Farhad Asgarov",
+      "email": "farhad@clave.team"
+    },
+    {
+      "name": "Alim Şahin",
+      "email": "alim@clave.team"
+    },
+    {
+      "name": "Hamza Karabağ",
+      "email": "hamza@clave.team"
+    },
+    {
+      "name": "Tahir Özpala",
+      "email": "tahir@clave.team"
+    },
+    {
+      "name": "Ulaş Erdoğan",
+      "email": "ulas@clave.team"
+    }
+  ],
+  "private": false,
+  "keywords": [
+    "clave",
+    "core",
+    "zksync"
+  ],
+  "description": "Library containing everything you need to start working with zksync",
+  "main": "index.ts",
+  "types": "dist/index.d.ts",
+  "publisher": "getclave.io",
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "dev": "tsc --watch",
+    "test": "npx jest",
+    "format": "prettier --write \"./**/*.ts\"",
+    "lint": "eslint \"./**/*.ts\" --fix",
+    "lint-check": "eslint \"./**/*.ts\"",
+    "release": "npm run build && npm publish"
+  },
+  "author": "getclave.io",
+  "license": "MIT",
+  "dependencies": {
+    "@trivago/prettier-plugin-sort-imports": "4.2.0",
+    "@typescript-eslint/eslint-plugin": "5.43.0",
+    "@typescript-eslint/parser": "5.43.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-prettier": "4.0.0",
+    "ethers": "5.7.2",
+    "jest": "29.6.2",
+    "numbro": "2.4.0",
+    "prettier": "2.8.8",
+    "react": "18.2.0",
+    "ts-jest": "29.1.1",
+    "typescript": "5.1.6",
+    "@getclave/utils": "1.1.1",
+    "@getclave/constants": "1.1.2",
+    "zksync-web3": "0.14.3",
+    "@redstone-finance/evm-connector": "0.2.6"
+  },
+  "devDependencies": {
+    "@types/jest": "29.5.3",
+    "@types/react": "18.2.17"
+  }
 }
